@@ -542,6 +542,7 @@
         "toastLastBottle": "Bottle removed. That beer is no longer in your cellar.",
         "error": "Could not remove the bottle. Please try again."
       },
+      "gone": "This bottle had already been removed.",
       "number": "{{container}} {{number}}",
       "vintage": "Vintage",
       "vintageUnknown": "Vintage unknown",

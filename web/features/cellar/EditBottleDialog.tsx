@@ -21,10 +21,12 @@ import { formMessageKey } from "@/i18n/translationKey";
 import { containerTypes } from "./addBottleSchema";
 import { todayIso } from "./bottleDateRules";
 import { containerLabelKey } from "./bottleFacts";
+import { isBottleGone } from "./bottleGone";
 import { CellarConflictAlert } from "./CellarConflictAlert";
 import { isCellarConflict } from "./conflict";
 import { type EditBottleFormValues, editBottleSchema } from "./editBottleSchema";
 import { useUpdateBottle } from "./hooks/useBottles";
+import { useBottleRemovalStore } from "./store";
 import type { Bottle } from "./types";
 
 export const EditBottleDialog = ({
@@ -42,6 +44,7 @@ export const EditBottleDialog = ({
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const updateBottle = useUpdateBottle();
+  const noteBottleGone = useBottleRemovalStore((state) => state.noteBottleGone);
   const ids = useId();
   const containerOptions = containerTypes.includes(bottle.containerType)
     ? containerTypes
@@ -78,17 +81,26 @@ export const EditBottleDialog = ({
   };
 
   const onSubmit = form.handleSubmit((values) => {
-    updateBottle.mutate(
-      {
+    // A plain promise chain, not `mutate`'s own onSuccess: a gone bottle's
+    // tile unmounts this dialog when the entry is read again, and the notice
+    // must still be raised.
+    updateBottle
+      .mutateAsync({
         id: bottle.id,
         request: {
           containerType: values.containerType,
           brewedDate: values.brewedDate || undefined,
           bestBeforeDate: values.bestBeforeDate || undefined,
         },
-      },
-      { onSuccess: () => onOpenChange(false) },
-    );
+      })
+      .then(
+        (updated) => {
+          if (isBottleGone(updated)) noteBottleGone();
+          onOpenChange(false);
+        },
+        // Shown by the form through `updateBottle.isError`.
+        () => undefined,
+      );
   });
 
   return (

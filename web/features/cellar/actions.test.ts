@@ -112,3 +112,25 @@ describe("a cellar write that lost to a concurrent change", () => {
     await expect(addBottlesAction(request)).rejects.toBe(failure);
   });
 });
+
+describe("a bottle that is already gone", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("is returned from an edit as an answer, with the cellar read again", async () => {
+    const { updateBottleAction } = await import("./actions");
+    updateCellarBottle.mockResolvedValue({ gone: true });
+
+    await expect(updateBottleAction("b1", { containerType: "CAN" })).resolves.toEqual({ gone: true });
+    expect(revalidatePath).toHaveBeenCalledWith("/[locale]/cellar", "page");
+  });
+
+  it("reads the cellar again after a removal the api counted as done", async () => {
+    const { removeBottleAction } = await import("./actions");
+    removeCellarBottle.mockResolvedValue(undefined);
+
+    await expect(removeBottleAction("b1")).resolves.toBeUndefined();
+    expect(revalidatePath).toHaveBeenCalledWith("/[locale]/cellar", "page");
+  });
+});

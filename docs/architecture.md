@@ -194,6 +194,13 @@ Source of truth: `backend/openapi.json` and Swagger UI. Reasons:
 - **DTOs at the boundary;** a JPA entity is never serialized, which
   `HttpBoundaryTest` enforces.
 - **Another user's resource answers `404`, never `403`.**
+- **A `404` on a bottle the caller already knows is an answer a client reads,
+  not a failure** ([ADR-0023](adr/0023-typed-api-failures.md)): the bottle is
+  gone, so **a removal answered `404` has succeeded** and shows no failure, and
+  **an edit answered `404` closes the form, discards what was typed, tells the
+  user the bottle had already been removed, and reads the entry again.** Either
+  way the entry is read again, so the screen shows what is there; an add that
+  races another is the `409` of [ADR-0057](adr/0057-retry-on-constraint-violation-for-get-or-create.md), not this.
 - **The spec is committed** and the API changes additively only while an app
   is installed beyond the product owner's own phone ([ADR-0093](adr/0093-the-api-is-additive-only-while-an-app-is-installed-and-a-committed-spec-fails-a-breaking-diff.md)).
 - **A breaking change is a new path** beside a `deprecated` one, removed only

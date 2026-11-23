@@ -10,6 +10,7 @@ import {
   removeCellarBottle,
   updateCellarBottle,
 } from "./api";
+import type { BottleGone } from "./bottleGone";
 import { type CellarFull,isCellarFull } from "./cellarFull";
 import { type CellarConflict, isConflictResult, lostToConcurrentChange } from "./conflict";
 import type { AddBottlesRequest, Bottle, UpdateBottleRequest } from "./types";
@@ -50,7 +51,7 @@ export const addBottlesAction = async (request: AddBottlesRequest): Promise<Bott
 export const updateBottleAction = async (
   id: string,
   request: UpdateBottleRequest,
-): Promise<Bottle | CellarConflict> => {
+): Promise<Bottle | BottleGone | CellarConflict> => {
   const updated = await lostToConcurrentChange(() => updateCellarBottle(id, request));
   if (isConflictResult(updated)) {
     return updated;

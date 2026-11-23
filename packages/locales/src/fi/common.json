@@ -542,6 +542,7 @@
         "toastLastBottle": "Pullo poistettu. Olut ei ole enää kellarissasi.",
         "error": "Pullon poisto epäonnistui. Yritä uudelleen."
       },
+      "gone": "Tämä pullo oli jo poistettu.",
       "number": "{{container}} {{number}}",
       "vintage": "Vuosikerta",
       "vintageUnknown": "Vuosikerta ei tiedossa",
