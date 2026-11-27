@@ -7,7 +7,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-import { ONE_SHOT_SERVICES, overrideDefaultProblems, completedServices, oneShotProblems, repositoryWaitProblems, waitProblems, addressProblems, backendLoad, edgeZoneProblems, readEdgeLimits, consistencyProblems, deployableAdminProblems, deployableSeedProblems, localSeedProblems, variableValue, devOnlyProblems, edgeProblems, issuerProblems, localAdminProblems, localDevServiceProblems, loopbackProblems, requiredVariables, roleProblems, variablesSupplied, variablesWithDefault } from "./check-compose.mjs";
+import { protectedRoleProblems, ONE_SHOT_SERVICES, overrideDefaultProblems, completedServices, oneShotProblems, repositoryWaitProblems, waitProblems, addressProblems, backendLoad, edgeZoneProblems, readEdgeLimits, consistencyProblems, deployableAdminProblems, deployableSeedProblems, localSeedProblems, variableValue, devOnlyProblems, edgeProblems, issuerProblems, localAdminProblems, localDevServiceProblems, loopbackProblems, requiredVariables, roleProblems, variablesSupplied, variablesWithDefault } from "./check-compose.mjs";
 
 test("requiredVariables finds every `:?` variable once", () => {
   const text = "A: ${A:?set A}\nB: x${B:?}y\nA again: ${A:?set A}\nC: ${C:-fallback}\nD: ${D}";
@@ -470,4 +470,17 @@ test("overrideDefaultProblems fails a default that drifted from the dev env file
   });
   assert.equal(problems.length, 1);
   assert.match(problems[0], /KALIA_MONITOR_PASSWORD/);
+});
+
+test("protectedRoleProblems accepts a realm import that reapplies the admin role", () => {
+  const services = { "keycloak-config": { environment: { IMPORT_PROTECTEDROLES_MODE: "replace" } } };
+  assert.deepEqual(protectedRoleProblems(services), []);
+});
+
+test("protectedRoleProblems rejects a realm import left on the tool's protected roles", () => {
+  for (const environment of [{}, { IMPORT_PROTECTEDROLES_MODE: "add" }]) {
+    const problems = protectedRoleProblems({ "keycloak-config": { environment } });
+    assert.equal(problems.length, 1);
+    assert.match(problems[0], /IMPORT_PROTECTEDROLES_MODE/);
+  }
 });

@@ -1,4 +1,4 @@
-FROM quay.io/adorsys/keycloak-config-cli:6.5.1-26.5.5
+FROM quay.io/adorsys/keycloak-config-cli:6.6.0-26.5.5
 
 USER 0
 
