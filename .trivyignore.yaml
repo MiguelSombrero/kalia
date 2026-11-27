@@ -23,11 +23,12 @@
 # rather than that a new waiver is warranted.
 
 # --- Pulled and base images (task 12). Each entry waives a finding in an
-# image this repository cannot patch: the newest upstream tag (checked
-# 2026-11-01) still carries it, so the fix is upstream's. The entries end the
+# image this repository cannot patch: the newest upstream tag, checked
+# at the entry's last renewal, still carries it, so the fix is upstream's. The entries end the
 # day `expired_at` passes; renewal means re-running the image scans, deleting
 # every entry whose finding a newer tag has fixed and bumping the date on the
-# rest (ADR-0024).
+# rest (ADR-0024). An entry suppresses its ID in every image, whatever its
+# statement names, so scan every image the workflow scans before deleting one.
 vulnerabilities:
   - id: CVE-2026-107364
     statement: "krb5-libs in grafana/otel-lgtm's Red Hat base (0.41.0 is the pinned tag and 0.41.1, published 2026-11-20 and the newest, still carries it: its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
@@ -94,145 +95,88 @@ vulnerabilities:
     expired_at: 2026-12-15
   - id: CVE-2025-61726
     statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
+    expired_at: 2026-12-15
   - id: CVE-2025-61729
     statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
+    expired_at: 2026-12-15
   - id: CVE-2025-68121
     statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
+    expired_at: 2026-12-15
   - id: CVE-2026-102554
     statement: "Keycloak's bundled guava (Keycloak 26.8.2-3 is the pinned and newest tag and still ships the vulnerable guava 33.6.0-jre; fixed in 33.7.2); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
-  - id: CVE-2026-111497
-    statement: "keycloak-config-cli's Ubuntu packages (6.5.1-26.5.5 is the newest tag and its Ubuntu layer predates the fixed packages); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
+    expired_at: 2026-12-15
   - id: CVE-2026-111943
-    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); the pebble binary in keycloak-config-cli (6.5.1-26.5.5 is the newest tag and its pebble was built with an old Go toolchain); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
+    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); Go binaries in grafana/otel-lgtm (0.41.0, the pinned tag); ends when upstream ships a fixed image"
+    expired_at: 2026-12-15
   - id: CVE-2026-25679
     statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
-  - id: CVE-2026-25681
-    statement: "the pebble binary in keycloak-config-cli (6.5.1-26.5.5 is the newest tag and its pebble was built with an old Go toolchain); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
-  - id: CVE-2026-27136
-    statement: "the pebble binary in keycloak-config-cli (6.5.1-26.5.5 is the newest tag and its pebble was built with an old Go toolchain); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
+    expired_at: 2026-12-15
   - id: CVE-2026-27145
-    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); the pebble binary in keycloak-config-cli (6.5.1-26.5.5 is the newest tag and its pebble was built with an old Go toolchain); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
-  - id: CVE-2026-29062
-    statement: "keycloak-config-cli's bundled Java libraries (6.5.1-26.5.5 is the newest tag and bundles the vulnerable jars); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
+    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); ends when upstream ships a fixed image"
+    expired_at: 2026-12-15
   - id: CVE-2026-32280
     statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
+    expired_at: 2026-12-15
   - id: CVE-2026-32281
     statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
+    expired_at: 2026-12-15
   - id: CVE-2026-32283
     statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
+    expired_at: 2026-12-15
   - id: CVE-2026-33811
-    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); the pebble binary in keycloak-config-cli (6.5.1-26.5.5 is the newest tag and its pebble was built with an old Go toolchain); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
+    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); ends when upstream ships a fixed image"
+    expired_at: 2026-12-15
   - id: CVE-2026-33814
-    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); the pebble binary in keycloak-config-cli (6.5.1-26.5.5 is the newest tag and its pebble was built with an old Go toolchain); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
+    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); ends when upstream ships a fixed image"
+    expired_at: 2026-12-15
   - id: CVE-2026-33818
-    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); the pebble binary in keycloak-config-cli (6.5.1-26.5.5 is the newest tag and its pebble was built with an old Go toolchain); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
+    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); ends when upstream ships a fixed image"
+    expired_at: 2026-12-15
   - id: CVE-2026-39820
-    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); the pebble binary in keycloak-config-cli (6.5.1-26.5.5 is the newest tag and its pebble was built with an old Go toolchain); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
+    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); ends when upstream ships a fixed image"
+    expired_at: 2026-12-15
   - id: CVE-2026-39821
-    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); the pebble binary in keycloak-config-cli (6.5.1-26.5.5 is the newest tag and its pebble was built with an old Go toolchain); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
+    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); ends when upstream ships a fixed image"
+    expired_at: 2026-12-15
   - id: CVE-2026-39822
-    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); the pebble binary in keycloak-config-cli (6.5.1-26.5.5 is the newest tag and its pebble was built with an old Go toolchain); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
+    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); ends when upstream ships a fixed image"
+    expired_at: 2026-12-15
   - id: CVE-2026-39836
-    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); the pebble binary in keycloak-config-cli (6.5.1-26.5.5 is the newest tag and its pebble was built with an old Go toolchain); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
-  - id: CVE-2026-40973
-    statement: "keycloak-config-cli's bundled Java libraries (6.5.1-26.5.5 is the newest tag and bundles the vulnerable jars); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
-  - id: CVE-2026-41850
-    statement: "keycloak-config-cli's bundled Java libraries (6.5.1-26.5.5 is the newest tag and bundles the vulnerable jars); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
+    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); ends when upstream ships a fixed image"
+    expired_at: 2026-12-15
   - id: CVE-2026-42499
-    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); the pebble binary in keycloak-config-cli (6.5.1-26.5.5 is the newest tag and its pebble was built with an old Go toolchain); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
+    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); ends when upstream ships a fixed image"
+    expired_at: 2026-12-15
   - id: CVE-2026-42504
-    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); the pebble binary in keycloak-config-cli (6.5.1-26.5.5 is the newest tag and its pebble was built with an old Go toolchain); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
-  - id: CVE-2026-45447
-    statement: "keycloak-config-cli's Ubuntu packages (6.5.1-26.5.5 is the newest tag and its Ubuntu layer predates the fixed packages); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
-  - id: CVE-2026-46600
-    statement: "the pebble binary in keycloak-config-cli (6.5.1-26.5.5 is the newest tag and its pebble was built with an old Go toolchain); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
-  - id: CVE-2026-54512
-    statement: "keycloak-config-cli's bundled Java libraries (6.5.1-26.5.5 is the newest tag and bundles the vulnerable jars); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
-  - id: CVE-2026-54513
-    statement: "keycloak-config-cli's bundled Java libraries (6.5.1-26.5.5 is the newest tag and bundles the vulnerable jars); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
+    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); ends when upstream ships a fixed image"
+    expired_at: 2026-12-15
   - id: CVE-2026-56853
-    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); the pebble binary in keycloak-config-cli (6.5.1-26.5.5 is the newest tag and its pebble was built with an old Go toolchain); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
+    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); ends when upstream ships a fixed image"
+    expired_at: 2026-12-15
   - id: CVE-2026-56858
-    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); the pebble binary in keycloak-config-cli (6.5.1-26.5.5 is the newest tag and its pebble was built with an old Go toolchain); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
+    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); ends when upstream ships a fixed image"
+    expired_at: 2026-12-15
   - id: CVE-2026-56859
-    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); the pebble binary in keycloak-config-cli (6.5.1-26.5.5 is the newest tag and its pebble was built with an old Go toolchain); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
+    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); ends when upstream ships a fixed image"
+    expired_at: 2026-12-15
   - id: CVE-2026-56860
-    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); the pebble binary in keycloak-config-cli (6.5.1-26.5.5 is the newest tag and its pebble was built with an old Go toolchain); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
+    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); ends when upstream ships a fixed image"
+    expired_at: 2026-12-15
   - id: CVE-2026-56862
-    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); the pebble binary in keycloak-config-cli (6.5.1-26.5.5 is the newest tag and its pebble was built with an old Go toolchain); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
-  - id: CVE-2026-68494
-    statement: "keycloak-config-cli's bundled Java libraries (6.5.1-26.5.5 is the newest tag and bundles the vulnerable jars); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
-  - id: CVE-2026-68497
-    statement: "keycloak-config-cli's bundled Java libraries (6.5.1-26.5.5 is the newest tag and bundles the vulnerable jars); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
+    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); ends when upstream ships a fixed image"
+    expired_at: 2026-12-15
   - id: CVE-2026-78661
-    statement: "the pebble binary in keycloak-config-cli (6.5.1-26.5.5 is the newest tag and its pebble was built with an old Go toolchain); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
+    statement: "golang.org/x/net in Go binaries of grafana/otel-lgtm (0.41.0 is the pinned tag and 0.41.1, published 2026-11-20 and the newest, still carries it); ends when upstream ships a fixed image"
+    expired_at: 2026-12-15
   - id: CVE-2026-78667
-    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); the pebble binary in keycloak-config-cli (6.5.1-26.5.5 is the newest tag and its pebble was built with an old Go toolchain); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
+    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); Go binaries in grafana/otel-lgtm (0.41.0, the pinned tag); ends when upstream ships a fixed image"
+    expired_at: 2026-12-15
   - id: CVE-2026-78669
-    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); the pebble binary in keycloak-config-cli (6.5.1-26.5.5 is the newest tag and its pebble was built with an old Go toolchain); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
-  - id: CVE-2026-84782
-    statement: "keycloak-config-cli's Ubuntu packages (6.5.1-26.5.5 is the newest tag and its Ubuntu layer predates the fixed packages); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
-  - id: CVE-2026-89407
-    statement: "keycloak-config-cli's bundled Java libraries (6.5.1-26.5.5 is the newest tag and bundles the vulnerable jars); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
-  - id: CVE-2026-89425
-    statement: "keycloak-config-cli's bundled Java libraries (6.5.1-26.5.5 is the newest tag and bundles the vulnerable jars); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
-  - id: CVE-2026-91776
-    statement: "keycloak-config-cli's bundled Java libraries (6.5.1-26.5.5 is the newest tag and bundles the vulnerable jars); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
-  - id: CVE-2026-91777
-    statement: "keycloak-config-cli's bundled Java libraries (6.5.1-26.5.5 is the newest tag and bundles the vulnerable jars); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
-  - id: CVE-2026-92392
-    statement: "keycloak-config-cli's Ubuntu packages (6.5.1-26.5.5 is the newest tag and its Ubuntu layer predates the fixed packages); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
+    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); Go binaries in grafana/otel-lgtm (0.41.0, the pinned tag); ends when upstream ships a fixed image"
+    expired_at: 2026-12-15
   - id: CVE-2026-97031
-    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); the pebble binary in keycloak-config-cli (6.5.1-26.5.5 is the newest tag and its pebble was built with an old Go toolchain); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
-  - id: GHSA-2m67-wjpj-xhg9
-    statement: "keycloak-config-cli's bundled Java libraries (6.5.1-26.5.5 is the newest tag and bundles the vulnerable jars); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
+    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); Go binaries in grafana/otel-lgtm (0.41.0, the pinned tag); ends when upstream ships a fixed image"
+    expired_at: 2026-12-15
   - id: CVE-2026-97054
     statement: "Go stdlib (net/http MaxBytesReader) in the binaries of grafana/alloy (v1.22.0), grafana/otel-lgtm (0.41.0), oliver006/redis_exporter (v1.97.0), quay.io/adorsys/keycloak-config-cli (6.5.1-26.5.5, its pebble) and postgres (gosu; pinned 18.6, and 18.7 still carries it): each is the newest tag and was built with Go older than 1.26.11 / 1.27.4, the fixed versions, so no patched tag exists for any of them; ends when upstream ships a fixed image"
     expired_at: 2026-12-15
@@ -246,4 +190,4 @@ secrets:
     paths:
       - /etc/ssl/private/ssl-cert-snakeoil.key
     statement: Debian ssl-cert's public self-signed snakeoil key in the postgres image, not a credential; ends when the image stops shipping it
-    expired_at: 2026-12-01
+    expired_at: 2026-12-15

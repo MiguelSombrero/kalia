@@ -202,7 +202,7 @@ services:
   keycloak-config:
     # Applies keycloak/realm-export.json on every boot, reconciling an
     # already-populated realm rather than only creating it once (ADR-0054).
-    image: quay.io/adorsys/keycloak-config-cli:6.5.1-26.5.5
+    image: quay.io/adorsys/keycloak-config-cli:6.6.0-26.5.5
     build:
       context: .
       dockerfile: keycloak/config-cli.Dockerfile
@@ -228,6 +228,10 @@ services:
       # keycloak-config`) the recovery from drift, and what
       # scripts/check-keycloak-realm-config.mjs checks has not been skipped.
       IMPORT_CACHE_ENABLED: "false"
+      # Do not drop: the tool's default skips updates to Kalia's realm role
+      # `admin` and still exits 0 (ADR-0054, ADR-0101). `replace` with no list
+      # protects no role. `make compose-check` fails without it.
+      IMPORT_PROTECTEDROLES_MODE: "replace"
       IMPORT_VARSUBSTITUTION_ENABLED: "true"
       # Undefined-is-error is this tool's own default, kept explicit — see
       # ADR-0054's Alternatives/Evidence for why that property mattered here.
