@@ -9,8 +9,7 @@ import { Screen } from "@/components/Screen";
 import { ScreenTitle } from "@/components/ScreenTitle";
 import { useAuth } from "@/lib/auth/AuthProvider";
 
-import { CellarList } from "./CellarList";
-import { sampleCellar } from "./sampleCellar";
+import { SignedInCellar } from "./SignedInCellar";
 
 export const CellarScreen = () => {
   const { t } = useTranslation();
@@ -40,9 +39,5 @@ export const CellarScreen = () => {
       </Screen>
     );
   }
-  return (
-    <Screen scroll={false}>
-      <CellarList entries={sampleCellar} onOpen={(entry) => router.push({ pathname: "/cellar/[id]", params: { id: entry.id } })} onAdd={() => router.push("/add-sheet")} onBrowse={() => router.navigate("/catalog")} />
-    </Screen>
-  );
+  return <SignedInCellar />;
 };

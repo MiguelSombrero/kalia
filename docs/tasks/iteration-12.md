@@ -25,7 +25,7 @@ cellar is used in a cellar.
 | [02](iteration-12/02-design-the-cellar-list.md) | Design the cellar list | done |
 | [03](iteration-12/03-design-a-cellar-entry-and-its-bottles.md) | Design a cellar entry and its bottles | done |
 | [20](iteration-12/20-every-wait-on-the-network-has-a-deadline.md) | Every wait on the network has a deadline | done |
-| [04](iteration-12/04-a-user-sees-their-cellar-on-their-phone.md) | A user sees their cellar on their phone | refined |
+| [04](iteration-12/04-a-user-sees-their-cellar-on-their-phone.md) | A user sees their cellar on their phone | done |
 | [05](iteration-12/05-a-user-opens-a-beer-in-their-cellar-and-sees-its-bottles.md) | A user opens a beer in their cellar and sees its bottles | refined |
 | [23](iteration-12/23-a-sheet-puts-voiceovers-focus-on-its-heading.md) | A sheet puts VoiceOver's focus on its heading | done |
 | [06](iteration-12/06-design-the-bottle-form.md) | Design the bottle form | refined |

@@ -1,6 +1,6 @@
 # Task 04: A user sees their cellar on their phone
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** DW-1
 
@@ -63,22 +63,22 @@ invitation stays as it is.
 
 ## Acceptance criteria
 
-- [ ] A component test shows the loading, error with its retry, empty and
+- [x] A component test shows the loading, error with its retry, empty and
       populated states, and a pull to refresh reading again
-- [ ] A component test shows a withdrawn entry marked and an unknown style or
+- [x] A component test shows a withdrawn entry marked and an unknown style or
       container shown rather than dropped
-- [ ] A component test shows a long Finnish beer name at the largest font scale
+- [x] A component test shows a long Finnish beer name at the largest font scale
       reading in full, and the rows found by role and accessible name
-- [ ] A component test shows the previous viewer's cellar gone after a change of
+- [x] A component test shows the previous viewer's cellar gone after a change of
       viewer
-- [ ] A component test shows a return to the foreground reading the cellar again
+- [x] A component test shows a return to the foreground reading the cellar again
       when its data is older than 60 seconds, and not when it is fresher
-- [ ] A component test shows the read sorted in each of the five orders and
+- [x] A component test shows the read sorted in each of the five orders and
       narrowed by the find field
-- [ ] A Maestro flow signs in and reads a seeded cellar on Android, and was
+- [x] A Maestro flow signs in and reads a seeded cellar on Android, and was
       confirmed to fail against the placeholder
-- [ ] The product owner used the screen on both platforms and signed it off
-- [ ] `make verify-fast` is green
+- [x] The product owner used the screen on both platforms and signed it off
+- [x] `make verify-fast` is green
 
 ## Notes
 

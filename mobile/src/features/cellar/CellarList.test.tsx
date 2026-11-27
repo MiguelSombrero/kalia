@@ -19,11 +19,12 @@ const entries = [
 const onOpen = jest.fn();
 const onAdd = jest.fn();
 const onBrowse = jest.fn();
+const onRefresh = jest.fn();
 const METRICS = { frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 47, left: 0, right: 0, bottom: 34 } };
 const renderList = (list = entries, locale: "en" | "fi" = "en") =>
   renderWithLocale(
     <SafeAreaProvider initialMetrics={METRICS}>
-      <CellarList entries={list} onOpen={onOpen} onAdd={onAdd} onBrowse={onBrowse} />
+      <CellarList entries={list} refreshing={false} onRefresh={onRefresh} onOpen={onOpen} onAdd={onAdd} onBrowse={onBrowse} />
     </SafeAreaProvider>,
     locale,
   );

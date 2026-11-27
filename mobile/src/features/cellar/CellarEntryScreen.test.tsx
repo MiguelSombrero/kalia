@@ -1,18 +1,30 @@
-import { fireEvent, screen } from "@testing-library/react-native";
+import { registerTransport, type Transport } from "@kalia/api";
+import { act, fireEvent, screen } from "@testing-library/react-native";
 import { Stack } from "expo-router";
 import { renderRouter } from "expo-router/testing-library";
 import { Text } from "react-native";
 
 import { AppProviders } from "@/lib/providers/AppProviders";
+import { entryOf } from "@/testing/cellarEntries";
 import { fakeTokenStore } from "@/testing/fakeTokenStore";
 
 import { CellarEntryScreen } from "./CellarEntryScreen";
 import { CellarScreen } from "./CellarScreen";
-import { sampleCellar } from "./sampleCellar";
 
-const signedIn = fakeTokenStore({ status: "signedIn" });
+const withTwentyFour = entryOf({ id: "4", name: "Long Cellared Stout", bestBefore: Array.from({ length: 24 }, () => "2030-01-01") });
+const cellar = [entryOf({ id: "1", name: "Aamunkoi Hefeweizen" }), withTwentyFour];
+const transport = jest.fn();
+let store = fakeTokenStore({ status: "signedIn" });
+
+beforeEach(() => {
+  store = fakeTokenStore({ status: "signedIn" });
+  transport.mockReset();
+  transport.mockResolvedValue({ data: cellar, status: 200, headers: new Headers() });
+  registerTransport(transport as unknown as Transport);
+});
+
 const Layout = () => (
-  <AppProviders locale="en" tokenStore={signedIn}>
+  <AppProviders locale="en" tokenStore={store}>
     <Stack screenOptions={{ headerShown: false }} />
   </AppProviders>
 );
@@ -34,8 +46,6 @@ const renderApp = (initialUrl: string) =>
     { initialUrl },
   );
 
-const withTwentyFour = sampleCellar.find((entry) => entry.bottles.length === 24)!;
-
 describe("the cellar entry's screen", () => {
   it("opens a cellar row's entry and returns to the list with Back", async () => {
     await renderApp("/cellar");
@@ -44,6 +54,7 @@ describe("the cellar entry's screen", () => {
 
     expect(await screen.findByRole("heading", { name: "Aamunkoi Hefeweizen" })).toBeOnTheScreen();
     expect(screen).toHavePathname("/cellar/1");
+    expect(transport).toHaveBeenCalledTimes(1);
 
     await fireEvent.press(screen.getByRole("button", { name: "Back to the cellar" }));
 
@@ -85,5 +96,25 @@ describe("the cellar entry's screen", () => {
     await fireEvent.press(screen.getByRole("button", { name: "Back to the cellar" }));
 
     expect(await screen.findByRole("heading", { name: "Cellar" })).toBeOnTheScreen();
+  });
+
+  it("says the cellar could not be read when it has none to draw from, and reads again on retry", async () => {
+    transport.mockResolvedValueOnce({ data: { title: "Server error" }, status: 500, headers: new Headers() });
+    await renderApp("/cellar/1");
+
+    expect(await screen.findByText("Couldn't load your cellar.")).toBeOnTheScreen();
+    await fireEvent.press(screen.getByRole("button", { name: "Try again" }));
+
+    expect(await screen.findByRole("heading", { name: "Aamunkoi Hefeweizen" })).toBeOnTheScreen();
+  });
+
+  it("returns to the list's invitation, with none of the entry, when the session ends", async () => {
+    await renderApp("/cellar/1");
+    await screen.findByRole("heading", { name: "Aamunkoi Hefeweizen" });
+
+    await act(async () => store.set({ status: "signedOut", expired: true }));
+
+    expect(await screen.findByText("Keep track of the bottles you own.")).toBeOnTheScreen();
+    expect(screen.queryByRole("heading", { name: "Aamunkoi Hefeweizen" })).not.toBeOnTheScreen();
   });
 });

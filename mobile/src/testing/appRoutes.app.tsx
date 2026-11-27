@@ -19,6 +19,7 @@ import SignInSheetRoute from "@/app/sign-in-sheet";
 import type { AuthState } from "@/lib/auth/tokenStore";
 import { AppProviders } from "@/lib/providers/AppProviders";
 
+import { entryOf } from "./cellarEntries";
 import { fakeTokenStore } from "./fakeTokenStore";
 
 export const BEER_ID = "6f1c2f6e-8f1e-4a0e-9a54-0f4a7e0b1c11";
@@ -48,6 +49,7 @@ export const serveApi = (transport: jest.Mock, beers: Beers = "some") => {
     if (url.includes("/api/v1/breweries/countries")) return reply(200, ["CZ", "FI"]);
     if (url.includes("/api/v1/breweries")) return reply(200, page([{ id: "b1", name: "Sinebrychoff", countryCode: "FI", city: "Helsinki" }]));
     if (url.includes("/api/v1/profile")) return reply(200, { username: "maku", cellarPublic: false });
+    if (url.includes("/api/v1/cellar")) return reply(200, [entryOf({ id: "1", name: "Aamunkoi Hefeweizen" })]);
     if (beers === "fail") throw apiError("network", "Could not reach the backend", { traceId: "0af7651916cd43dd8448eb211c80319c" });
     if (beers === "missing" && url.includes(BEER_ID)) return reply(404, { title: "Not found" });
     if (url.includes(`/api/v1/beers/${BEER_ID}`)) return reply(200, beer(BEER_ID, "Pale Ale"));

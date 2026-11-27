@@ -1,0 +1,16 @@
+appId: fi.kalia.app
+name: The Cellar tab lists the seeded cellar read from the stack
+---
+# The cellar is seeded through the API by scripts/seed-cellar.mjs before the
+# flows run, so its totals below are that script's SEEDED_TOTALS.
+- launchApp:
+    clearState: true
+- runFlow: subflows/sign-in-as-testuser.yaml
+- tapOn: "Cellar|Kellari"
+- extendedWaitUntil:
+    visible:
+      id: "cellar-row"
+    timeout: 60000
+- assertVisible: "3 beers · 6 bottles|3 olutta · 6 pulloa"
+- assertVisible: "Lapin Kulta, .*"
+- assertVisible: "Baltic G Porter, .*"
