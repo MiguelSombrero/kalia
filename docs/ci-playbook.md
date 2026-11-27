@@ -387,6 +387,15 @@ legs on CVE-2026-97054, run `44458816192` — so look for the single ID before
 treating it as six findings. A patched upstream tag is the fix; with none, a
 waiver in `.trivyignore.yaml` for each image's own newest tag.
 
+**`Scan postgres:<version>` is red on a Debian package.**
+`postgres/Dockerfile` upgrades only the packages it names, so when Debian has
+published the fix and the upstream tag does not carry it yet, add the package
+to its `--only-upgrade` list (`libzstd1`, CVE-2026-124851, run `45815813637`).
+The advice above to pull a failing image does not work for this one: compose
+tags its build with the upstream name, so a pull fetches the base without the
+upgrade. Build under another tag, `docker build --pull --no-cache -f
+postgres/Dockerfile -t <tag> .`, and scan that.
+
 **An image scan fails with `Unable to initialize the Java DB … failed to
 download Java DB … mirror.gcr.io/aquasec/trivy-java-db:1 … unexpected status
 code 404 Not Found`.** Not a finding: Trivy could not fetch its own
