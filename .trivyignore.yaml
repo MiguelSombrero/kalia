@@ -186,4 +186,4 @@ secrets:
     paths:
       - /etc/ssl/private/ssl-cert-snakeoil.key
     statement: Debian ssl-cert's public self-signed snakeoil key in the postgres image, not a credential; ends when the image stops shipping it
-    expired_at: 2026-12-01
+    expired_at: 2026-12-15

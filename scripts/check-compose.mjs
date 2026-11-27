@@ -9,9 +9,10 @@
 // required secrets, naming that variable; that it defaults none the dev env
 // file supplies and has no seed service or Swagger client; and that the local
 // stack renders from the root .env's one secret alone. It also proves that an
-// image added to the base file reaches the vulnerability scan's matrix. It
-// also proves that no `docker compose up --wait` in the Makefile, a workflow
-// or a script leaves out its services or names a one-shot one.
+// image added to the base file reaches the vulnerability scan's matrix, and
+// that the realm import still updates the realm role `admin`. It also proves
+// that no `docker compose up --wait` in the Makefile, a workflow or a script
+// leaves out its services or names a one-shot one.
 
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -425,6 +426,12 @@ export const localAdminProblems = (services) => {
   return problems;
 };
 
+/** Problems with keycloak-config-cli keeping its default protected roles, which skips updates to Kalia's `admin`. */
+export const protectedRoleProblems = (services) =>
+  services["keycloak-config"]?.environment?.IMPORT_PROTECTEDROLES_MODE === "replace"
+    ? []
+    : ["keycloak-config is not given IMPORT_PROTECTEDROLES_MODE=replace, so it never updates the realm role admin"];
+
 /** The realm every issuer names (keycloak/realm-export.json). */
 const ISSUER_PATH = "/realms/kalia";
 
@@ -541,7 +548,7 @@ const run = () => {
       adrText: readFileSync(join(ROOT, "docs", "adr", ADR_0090), "utf8"),
     }),
   );
-  problems.push(...edgeProblems(base.services), ...deployableAdminProblems(base.services), ...devOnlyProblems(base.services), ...roleProblems(base.services));
+  problems.push(...edgeProblems(base.services), ...deployableAdminProblems(base.services), ...devOnlyProblems(base.services), ...roleProblems(base.services), ...protectedRoleProblems(base.services));
 
   const scanEnv = { PATH: process.env.PATH, HOME: process.env.HOME, ...everySecret };
   const scanArgs = ["--env-file", "/dev/null", "-f", "docker-compose.base.yml"];
@@ -576,6 +583,7 @@ const run = () => {
       }
     }
     problems.push(...localAdminProblems(local.services), ...localDevServiceProblems(local.services), ...oneShotProblems(local.services));
+    problems.push(...protectedRoleProblems(local.services).map((problem) => `local stack: ${problem}`));
 
     // The observability profile's images are scanned too (ADR-0114, ADR-0024).
     const profiled = JSON.parse(compose(["--env-file", rootEnv, "--profile", "observability", "config", "--format", "json"], {}));
