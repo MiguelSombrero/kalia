@@ -1,31 +1,51 @@
 import type { CellarEntry } from "./types";
 
-const bottle = (entryId: string, index: number, bestBeforeDate?: string) => ({
-  id: `${entryId}-bottle-${index}`,
-  entryId,
-  containerType: "BOTTLE" as const,
-  ...(bestBeforeDate ? { bestBeforeDate } : {}),
-  createdAt: "2026-01-01T00:00:00Z",
-  updatedAt: "2026-01-01T00:00:00Z",
-});
+type Container = "BOTTLE" | "CAN" | "KEG";
+type Spec = string | undefined | { container?: Container; brewed?: string; bestBefore?: string };
 
-const entry = (id: string, name: string, brewery: string, style: string, abv: number, bestBefore: (string | undefined)[], withdrawn = false): CellarEntry => ({
+const yearsBefore = (date: string, years: number) => `${Number(date.slice(0, 4)) - years}${date.slice(4)}`;
+
+// A bottle given only a best-before date was brewed two years before it, so every bottle in the list has a vintage to show but the ones given none.
+const bottle = (entryId: string, index: number, spec: Spec) => {
+  const { container = "BOTTLE", bestBefore, brewed = bestBefore ? yearsBefore(bestBefore, 2) : undefined } = typeof spec === "object" ? spec : { bestBefore: spec };
+  return {
+    id: `${entryId}-bottle-${index}`,
+    entryId,
+    containerType: container,
+    ...(bestBefore ? { bestBeforeDate: bestBefore } : {}),
+    ...(brewed ? { brewedDate: brewed } : {}),
+    createdAt: "2026-01-01T00:00:00Z",
+    updatedAt: "2026-01-01T00:00:00Z",
+  };
+};
+
+const entry = (id: string, name: string, brewery: string, style: string, abv: number, specs: Spec[], withdrawn = false): CellarEntry => ({
   id,
   beer: { id: `beer-${id}`, name, brewery, style, abv },
-  bottles: bestBefore.map((date, index) => bottle(id, index, date)),
-  quantity: bestBefore.length,
+  bottles: specs.map((spec, index) => bottle(id, index, spec)),
+  quantity: specs.length,
   withdrawn,
   createdAt: "2026-01-01T00:00:00Z",
   updatedAt: "2026-01-01T00:00:00Z",
 });
 
-const times = (count: number, date?: string) => Array.from({ length: count }, () => date);
+const times = (count: number, spec?: Spec) => Array.from({ length: count }, () => spec);
 
 export const sampleCellar: CellarEntry[] = [
   entry("1", "Aamunkoi Hefeweizen", "Pohjanranta Panimo", "Hefeweizen", 5.2, ["2027-01-15"]),
   entry("2", "Barrel No. 7", "Kallio Barrel Works", "Imperial Stout", 12.5, [...times(3, "2031-05-01"), undefined]),
   entry("3", "Harmaa Hylje", "Saaristomeren Käsityöpanimo", "Baltic Porter", 7.2, ["2026-09-30", "2026-09-30", ...times(4, "2027-03-31")]),
-  entry("4", "Pohjoisen Pitkän Pimeän Kauden Kaakaokauraolut", "Itäisen Saaristomeren Käsityöpanimoyhtiö", "Oatmeal Stout", 9, times(2, "2027-02-28")),
+  entry("4", "Pohjoisen Pitkän Pimeän Kauden Kaakaokauraolut", "Itäisen Saaristomeren Käsityöpanimoyhtiö", "Oatmeal Stout", 9, [
+    ...times(6, { brewed: "2024-03-10", bestBefore: "2027-03-10" }),
+    ...times(4, { brewed: "2023-02-14", bestBefore: "2026-02-14" }),
+    { brewed: "2023-02-14", bestBefore: "2026-11-23" },
+    ...times(3, { container: "CAN", brewed: "2025-09-01", bestBefore: "2028-09-01" }),
+    ...times(2, { container: "CAN", brewed: "2022-11-05", bestBefore: "2026-05-05" }),
+    ...times(2, { brewed: "2021-12-01" }),
+    ...times(3),
+    { container: "KEG", brewed: "2025-01-20", bestBefore: "2027-01-20" },
+    ...times(2, { container: "CAN", bestBefore: "2027-08-01" }),
+  ]),
   entry("5", "Hazy Hopfen Hoax", "Kolmas Linja", "New England IPA", 6.5, times(3, "2026-12-15")),
   entry("6", "Ruostunut Ankkuri", "Satama Panimo", "Double IPA", 8.4, ["2026-11-01"]),
   entry("7", "Kuiva Karhu", "Kallio Barrel Works", "Pilsner", 4.6, times(12, "2027-06-30")),

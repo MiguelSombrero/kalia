@@ -23,7 +23,7 @@ cellar is used in a cellar.
 | [01](iteration-12/01-decision-how-the-cellar-behaves-offline.md) | Decide how the cellar behaves offline | done |
 | [19](iteration-12/19-a-cellar-has-a-size-limit-the-server-enforces.md) | A cellar has a size limit the server enforces | done |
 | [02](iteration-12/02-design-the-cellar-list.md) | Design the cellar list | done |
-| [03](iteration-12/03-design-a-cellar-entry-and-its-bottles.md) | Design a cellar entry and its bottles | refined |
+| [03](iteration-12/03-design-a-cellar-entry-and-its-bottles.md) | Design a cellar entry and its bottles | done |
 | [20](iteration-12/20-every-wait-on-the-network-has-a-deadline.md) | Every wait on the network has a deadline | done |
 | [04](iteration-12/04-a-user-sees-their-cellar-on-their-phone.md) | A user sees their cellar on their phone | refined |
 | [05](iteration-12/05-a-user-opens-a-beer-in-their-cellar-and-sees-its-bottles.md) | A user opens a beer in their cellar and sees its bottles | refined |

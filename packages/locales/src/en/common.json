@@ -797,5 +797,14 @@
       "add": "Add a bottle"
     },
     "noMatch": "No beer in your cellar matches “{{query}}”."
+  },
+  "cellarEntry": {
+    "back": "Back to the cellar",
+    "add": "Add a bottle",
+    "seeInCatalog": "See in the catalog",
+    "brewedOn": "Brewed {{date}}",
+    "brewedMissing": "Brewed: not recorded",
+    "notFound": "This beer is no longer in your cellar.",
+    "bestBeforeMissing": "Best before: not recorded"
   }
 }

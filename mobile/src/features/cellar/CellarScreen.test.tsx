@@ -13,8 +13,8 @@ jest.mock("expo-router", () => ({ ...jest.requireActual("expo-router"), useRoute
 
 describe("CellarScreen", () => {
   it.each([
-    ["en", "Cellar", "17 beers · 50 bottles"],
-    ["fi", "Kellari", "17 olutta · 50 pulloa"],
+    ["en", "Cellar", "17 beers · 72 bottles"],
+    ["fi", "Kellari", "17 olutta · 72 pulloa"],
   ] as const)("shows a signed-in user's cellar with its totals in %s", async (locale, heading, totals) => {
     await renderWithLocale(
       <SafeAreaProvider initialMetrics={{ frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 47, left: 0, right: 0, bottom: 34 } }}>

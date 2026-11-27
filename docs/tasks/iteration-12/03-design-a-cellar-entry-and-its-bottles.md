@@ -1,6 +1,6 @@
 # Task 03: Design a cellar entry and its bottles
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** DW-1
 - **Kind:** design
@@ -79,24 +79,24 @@ conventions where they differ. Standing intent goes in
 
 ## Acceptance criteria
 
-- [ ] The product owner chose from built alternatives, at minimum the entry's
+- [x] The product owner chose from built alternatives, at minimum the entry's
       presentation and a bottle's row, each judged at the largest text size in
       both locales; a design record holds the directions and the choice
-- [ ] A component test finds the close action, every bottle and its dates by
+- [x] A component test finds the close action, every bottle and its dates by
       role and accessible name, and reads an expired bottle as expired without
       colour
-- [ ] A component test renders an entry with twenty-four bottles, some with no
+- [x] A component test renders an entry with twenty-four bottles, some with no
       dates, and a long Finnish beer name at the largest font scale, reading in
       full
-- [ ] A component test shows a withdrawn entry with its bottles and no link to
+- [x] A component test shows a withdrawn entry with its bottles and no link to
       a catalog page
-- [ ] `docs/design.md` carries the chosen entry as standing intent, and
+- [x] `docs/design.md` carries the chosen entry as standing intent, and
       `scripts/check-design-tokens.mjs` and `scripts/check-contrast.mjs` pass
       over it
-- [ ] The product owner signed off the built entry live, on the route
+- [x] The product owner signed off the built entry live, on the route
       [ADR-0108](../../adr/0108-a-mobile-direction-is-explored-as-a-mockup-or-native-build-then-signed-off-on-the-owners-phone.md)
       names
-- [ ] `make verify-fast` is green
+- [x] `make verify-fast` is green
 
 ## Notes
 

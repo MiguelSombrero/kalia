@@ -74,8 +74,9 @@ anything a visitor sees; the `design-task` skill and
 
 Feed, Catalog, a central Add action, Cellar and Profile stay in that order.
 Add, filters and beer details open as sheets with a visible dismissal; the
-platform supplies its own navigation chrome. Screen-specific layout remains for
-the corresponding screen task.
+platform supplies its own navigation chrome. The one exception is
+[a beer in the cellar](#mobile-cellar-entry), which is pushed inside its tab.
+Screen-specific layout remains for the corresponding screen task.
 ([ADR-0109](adr/0109-mobile-navigation-uses-four-tabs-and-a-central-add-action.md))
 
 ### Tab icons
@@ -234,9 +235,53 @@ to the entry that opens from the row.
   pinned, so a control never takes a screen of its own; the field and the order
   button take a full-width line each, and a row stacks its strength under its text.
   At every size a long name wraps beside the strength and never pushes it off. No text sits in a fixed height.
-- **Not decided here.** What opens from a row and a bottle's dates
-  ([task 03](tasks/iteration-12/03-design-a-cellar-entry-and-its-bottles.md)), and
-  the list's loading, error and offline states.
+- **A row is a button** that opens [its entry](#mobile-cellar-entry).
+- **Not decided here.** The list's loading, error and offline states.
+
+## Mobile cellar entry
+
+What opens from a cellar row: the beer, and one row for each bottle of it with its
+container, vintage, best-before and brewed dates. It is where a bottle is read and
+where the actions on one begin.
+([design record](design-records/iteration-12-03-cellar-entry.md))
+
+- **Pushed inside the Cellar tab, not a sheet.** The entry is a place that stays
+  open while a bottle is edited, removed and added, so it keeps the tab bar and the
+  swipe back, which a sheet over the tab bar would take away. This is the one
+  exception to [sheets](#mobile-navigation). Its way out is a visible Back button
+  at the top: the chevron and the word Cellar on iOS, the arrow alone on Android,
+  each named "Back to the cellar".
+- **The head is the beer's colour field** of [Mobile identity](#mobile-identity):
+  name as the screen's heading, brewery, style, and the strength large at the end;
+  in dark the neutral card with its slab. Under it Add a bottle is the one cobalt
+  block and See in the catalog is the same block outlined, side by side and
+  stacking at the largest text size.
+- **A withdrawn beer** shows its bottles, the bordered withdrawn label in its head
+  and the sentence that the bottles stay but no more can be added, and shows no
+  Add a bottle and no way to the catalog page.
+- **One list, a row for each bottle,** in vintage order, oldest first, as on the web:
+  a bottle with no brewed date comes last, and among equals the earlier best-before
+  date comes first. Bottles are never grouped into a count and never sectioned.
+- **A row says, in this order:** a picture of the container, the vintage large, the
+  best-before date, the brewed date. The picture is a bottle, a can or a keg in the
+  phone's own plain line, decorative beside the words that name the container for
+  assistive technology; a container the app does not know is drawn as a bottle and
+  named "Other". A date is a day, formatted with no time zone.
+- **A date that is missing is said in words,** never left blank: "Vintage unknown",
+  "Best before: not recorded", "Brewed: not recorded".
+- **Past its best-before date** means strictly before today, and is said by a bordered
+  tag with a clock and the words "Past best before", set in ink after the date. It
+  is never red and never says spoiled: a bottle past the date is old, not off. The
+  row's spoken name carries the same words, so the mark never rests on colour.
+- **Room for the actions:** a row ends with its full width free for a 48 pt button, which
+  [task 10](tasks/iteration-12/10-design-acting-on-a-bottle-edit-and-remove.md) opens
+  edit and remove from; the head already carries Add.
+- **It reads what the cellar list holds,** so it opens with no signal.
+- **At the largest text size** nothing is cut or sits in a fixed height: the head
+  stacks its strength, the two buttons stack, and a long date line wraps beside the
+  picture.
+- **Not decided here.** How a bottle is edited, removed or added, and the entry's
+  loading, error and offline states.
 
 ## Mobile motion
 
