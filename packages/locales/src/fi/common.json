@@ -799,5 +799,14 @@
     "noMatch": "Kellarisi oluet eivät vastaa hakua ”{{query}}”.",
     "loadFailed": "Kellarisi lataaminen ei onnistunut.",
     "refreshFailed": "Kellarisi päivittäminen ei onnistunut. Näkyvät tiedot voivat olla vanhentuneita."
+  },
+  "cellarEntry": {
+    "back": "Takaisin kellariin",
+    "add": "Lisää pullo",
+    "seeInCatalog": "Näytä katalogissa",
+    "brewedOn": "Panopäivä {{date}}",
+    "brewedMissing": "Panopäivä: ei kirjattu",
+    "notFound": "Tämä olut ei ole enää kellarissasi.",
+    "bestBeforeMissing": "Parasta ennen: ei kirjattu"
   }
 }

@@ -4,6 +4,8 @@ import { StyleSheet } from "react-native";
 export const expectScalesWithText = () => {
   const offences: string[] = [];
   const visit = (node: { type: unknown; props: Record<string, unknown>; children: unknown[] }) => {
+    // A drawn picture has a size of its own and holds no text for the system's text size to outgrow it.
+    if (String(node.type).startsWith("RNSVG")) return;
     const style = StyleSheet.flatten(node.props.style as never) ?? {};
     if (node.props.numberOfLines !== undefined) offences.push(`${String(node.type)} sets numberOfLines`);
     if (node.props.allowFontScaling === false) offences.push(`${String(node.type)} sets allowFontScaling={false}`);

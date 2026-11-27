@@ -31,7 +31,7 @@ const renderCellar = (locale: "en" | "fi" = "en") =>
 const CELLAR_LIST = /^(Cellar|Kellari)$/;
 const list = () => screen.getByLabelText(CELLAR_LIST);
 const pull = () => act(async () => list().props.refreshControl.props.onRefresh());
-const rowNames = () => screen.getAllByRole("listitem").map((row) => String(row.props.accessibilityLabel).split(",")[0]);
+const rowNames = () => screen.getAllByTestId("cellar-row").map((row) => String(row.props.accessibilityLabel).split(",")[0]);
 
 const cellar: CellarEntry[] = [
   entryOf({ id: "1", name: "Zeta Stout", brewery: "Kallio Barrel Works", style: "Imperial Stout", abv: 9, bestBefore: ["2030-01-01", "2030-01-01"] }),
@@ -124,7 +124,7 @@ describe("the Cellar tab's read", () => {
     await pull();
 
     expect(await screen.findByText("Couldn't refresh your cellar. What you see may be out of date.")).toBeOnTheScreen();
-    expect(screen.getAllByRole("listitem")).toHaveLength(4);
+    expect(screen.getAllByTestId("cellar-row")).toHaveLength(4);
 
     transport.mockResolvedValueOnce(answer(cellar));
     await fireEvent.press(screen.getByRole("button", { name: "Try again" }));
@@ -138,8 +138,8 @@ describe("the Cellar tab's read", () => {
     transport.mockResolvedValue(answer([...cellar, growler]));
     await renderCellar();
 
-    expect(await screen.findByRole("listitem", { name: "Gone Beer, Closed Brewery, Mead, 11 %, 1 bottle, Withdrawn from the catalog" })).toBeOnTheScreen();
-    expect(screen.getByRole("listitem", { name: "Mystery Brew, Brewery 9, Gruit Sour Hybrid, 5 %, 1 bottle" })).toBeOnTheScreen();
+    expect(await screen.findByRole("button", { name: "Gone Beer, Closed Brewery, Mead, 11 %, 1 bottle, Withdrawn from the catalog" })).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "Mystery Brew, Brewery 9, Gruit Sour Hybrid, 5 %, 1 bottle" })).toBeOnTheScreen();
     expect(screen.getByRole("summary", { name: "5 beers · 8 bottles" })).toBeOnTheScreen();
   });
 
@@ -179,7 +179,7 @@ describe("the Cellar tab's read", () => {
     atLargestFontScale();
     await renderCellar("fi");
 
-    const row = await screen.findByRole("listitem", { name: `${name}, Itäisen Saaristomeren Käsityöpanimoyhtiö, Oatmeal Stout, 9 %, 2 pulloa` });
+    const row = await screen.findByRole("button", { name: `${name}, Itäisen Saaristomeren Käsityöpanimoyhtiö, Oatmeal Stout, 9 %, 2 pulloa` });
     expect(within(row).getByText(name)).toBeOnTheScreen();
     expect(within(row).getByText(name).props.numberOfLines).toBeUndefined();
     expectScalesWithText();
@@ -235,6 +235,6 @@ describe("a long cellar", () => {
     await renderCellar();
 
     expect(await screen.findByRole("summary", { name: "2000 beers · 2000 bottles" })).toBeOnTheScreen();
-    expect(screen.getAllByRole("listitem").length).toBeLessThan(100);
+    expect(screen.getAllByTestId("cellar-row").length).toBeLessThan(100);
   });
 });

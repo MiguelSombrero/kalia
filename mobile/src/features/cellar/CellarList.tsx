@@ -19,9 +19,17 @@ import { type CellarOrder, findEntries, ORDER_LABEL_KEYS, sortEntries, totalsOf 
 import { SortMenu } from "./SortMenu";
 import type { CellarEntry } from "./types";
 
-type CellarListProps = { entries: CellarEntry[]; refreshing: boolean; onRefresh: () => void; notice?: ReactNode; onAdd: () => void; onBrowse: () => void };
+type CellarListProps = {
+  entries: CellarEntry[];
+  refreshing: boolean;
+  onRefresh: () => void;
+  notice?: ReactNode;
+  onOpen: (entry: CellarEntry) => void;
+  onAdd: () => void;
+  onBrowse: () => void;
+};
 
-export const CellarList = ({ entries, refreshing, onRefresh, notice, onAdd, onBrowse }: CellarListProps) => {
+export const CellarList = ({ entries, refreshing, onRefresh, notice, onOpen, onAdd, onBrowse }: CellarListProps) => {
   const styles = useStyles();
   const { t, i18n } = useTranslation();
   const [order, setOrder] = useState<CellarOrder>("name");
@@ -103,7 +111,7 @@ export const CellarList = ({ entries, refreshing, onRefresh, notice, onAdd, onBr
         ListHeaderComponent={header}
         ListEmptyComponent={empty}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        renderItem={({ item }) => <CellarRow entry={item} language={i18n.language} />}
+        renderItem={({ item }) => <CellarRow entry={item} language={i18n.language} onPress={() => onOpen(item)} />}
       />
       {entries.length > 0 && pinned ? bar : null}
       {menuOpen ? (

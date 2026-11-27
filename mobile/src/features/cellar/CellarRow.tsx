@@ -7,12 +7,13 @@ import { STACK_FROM_FONT_SCALE, textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";
 import { useColorMode, useThemeColors } from "@/lib/design/useThemeColors";
+import { PressFeedback } from "@/lib/motion/PressFeedback";
 
 import type { CellarEntry } from "./types";
 
-type CellarRowProps = { entry: CellarEntry; language: string };
+type CellarRowProps = { entry: CellarEntry; language: string; onPress?: () => void };
 
-export const CellarRow = ({ entry, language }: CellarRowProps) => {
+export const CellarRow = ({ entry, language, onPress }: CellarRowProps) => {
   const styles = useStyles();
   const { t } = useTranslation();
   const { beer } = entry;
@@ -29,7 +30,7 @@ export const CellarRow = ({ entry, language }: CellarRowProps) => {
   const spoken = [beer.name, beer.brewery, beer.style, `${strength} %`, bottles, withdrawn].filter(Boolean).join(", ");
 
   return (
-    <View testID="cellar-row" accessible role="listitem" accessibilityLabel={spoken} style={[styles.card, stacked && styles.cardStacked, { backgroundColor: fill }, dark && styles.cardWithSlab]}>
+    <PressFeedback testID="cellar-row" role={onPress ? "button" : undefined} accessibilityLabel={onPress ? spoken : undefined} disabled={!onPress} onPress={onPress} style={[styles.card, stacked && styles.cardStacked, { backgroundColor: fill }, dark && styles.cardWithSlab]}>
       {dark ? <BeerSlot beerStyle={beer.style} /> : null}
       <View style={stacked ? styles.textStacked : styles.text}>
         <Text style={[styles.name, { color: ink }]}>{beer.name}</Text>
@@ -42,7 +43,7 @@ export const CellarRow = ({ entry, language }: CellarRowProps) => {
         {strength}
         <Text style={styles.unit}>{" %"}</Text>
       </Text>
-    </View>
+    </PressFeedback>
   );
 };
 

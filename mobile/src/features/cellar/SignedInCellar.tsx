@@ -47,6 +47,7 @@ export const SignedInCellar = () => {
             <ErrorAlert message={t("cellarList.refreshFailed")} error={cellar.error} onRetry={() => void cellar.refetch()} retrying={cellar.isFetching} />
           ) : null
         }
+        onOpen={(entry) => router.push({ pathname: "/cellar/[id]", params: { id: entry.id } })}
         onAdd={() => router.push("/add-sheet")}
         onBrowse={() => router.navigate("/catalog")}
       />
