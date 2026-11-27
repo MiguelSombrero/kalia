@@ -56,7 +56,7 @@ somewhere else. An issue that comes back after its task is done is a
 regression and gets a new ID, and its description names the ID it
 repeats, so the recurrence stays visible once the old entry is gone.
 
-**Highest issued:** MUST-28 · SHOULD-144 · COULD-171
+**Highest issued:** MUST-28 · SHOULD-144 · COULD-172
 
 ## MUST
 
@@ -443,6 +443,16 @@ repeats, so the recurrence stays visible once the old entry is gone.
   [iteration 12 task 05](iteration-12/05-a-user-opens-a-beer-in-their-cellar-and-sees-its-bottles.md);
   whether `mobile-ios-release` does the same was not checked. The fix is for a
   release run to exit after the install, with a test in `mobile-native.test.mjs`.
+- **COULD-172** *(confirmed 2026-11-27)* — On Android the app has opened the
+  keyboard on the Catalog's search field by itself at launch
+  (`SHOW_AUTO_EDITOR_FORWARD_NAV` in the device log), on an emulator in CI
+  (run 45998147092) and on one locally. What makes the field take focus is not
+  known, nor whether a person's phone does it. The sign-in subflow closes the
+  keyboard before its first tap; `navigation.yaml`, `catalog-lists-beers.yaml`,
+  `beer-details.yaml` and `catalog-search-and-filter.yaml` also tap a tab straight
+  after launch. The fix is to find why the field is focused and stop it in the
+  app, then drop the subflow's swipe. Found in
+  [iteration 12 task 05](iteration-12/05-a-user-opens-a-beer-in-their-cellar-and-sees-its-bottles.md).
 
 ## Retired
 
