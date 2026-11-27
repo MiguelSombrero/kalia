@@ -17,6 +17,7 @@ const transport = jest.fn();
 let store = fakeTokenStore({ status: "signedIn" });
 
 beforeEach(() => {
+  jest.useFakeTimers();
   store = fakeTokenStore({ status: "signedIn" });
   transport.mockReset();
   transport.mockResolvedValue({ data: cellar, status: 200, headers: new Headers() });
@@ -24,6 +25,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  jest.useRealTimers();
   jest.restoreAllMocks();
 });
 
