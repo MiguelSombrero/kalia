@@ -27,7 +27,8 @@
 # at the entry's last renewal, still carries it, so the fix is upstream's. The entries end the
 # day `expired_at` passes; renewal means re-running the image scans, deleting
 # every entry whose finding a newer tag has fixed and bumping the date on the
-# rest (ADR-0024).
+# rest (ADR-0024). An entry suppresses its ID in every image, whatever its
+# statement names, so scan every image the workflow scans before deleting one.
 vulnerabilities:
   - id: CVE-2026-107364
     statement: "krb5-libs in grafana/otel-lgtm's Red Hat base (0.41.0 is the pinned tag and 0.41.1, published 2026-11-20 and the newest, still carries it: its RHEL layer predates the fixed package); ends when upstream ships a fixed image"
@@ -105,7 +106,7 @@ vulnerabilities:
     statement: "Keycloak's bundled guava (Keycloak 26.8.2-3 is the pinned and newest tag and still ships the vulnerable guava 33.6.0-jre; fixed in 33.7.2); ends when upstream ships a fixed image"
     expired_at: 2026-12-15
   - id: CVE-2026-111943
-    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); ends when upstream ships a fixed image"
+    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); Go binaries in grafana/otel-lgtm (0.41.0, the pinned tag); ends when upstream ships a fixed image"
     expired_at: 2026-12-15
   - id: CVE-2026-25679
     statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); ends when upstream ships a fixed image"
@@ -164,14 +165,17 @@ vulnerabilities:
   - id: CVE-2026-56862
     statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); ends when upstream ships a fixed image"
     expired_at: 2026-12-15
+  - id: CVE-2026-78661
+    statement: "golang.org/x/net in Go binaries of grafana/otel-lgtm (0.41.0 is the pinned tag and 0.41.1, published 2026-11-20 and the newest, still carries it); ends when upstream ships a fixed image"
+    expired_at: 2026-12-01
   - id: CVE-2026-78667
-    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); ends when upstream ships a fixed image"
+    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); Go binaries in grafana/otel-lgtm (0.41.0, the pinned tag); ends when upstream ships a fixed image"
     expired_at: 2026-12-15
   - id: CVE-2026-78669
-    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); ends when upstream ships a fixed image"
+    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); Go binaries in grafana/otel-lgtm (0.41.0, the pinned tag); ends when upstream ships a fixed image"
     expired_at: 2026-12-15
   - id: CVE-2026-97031
-    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); ends when upstream ships a fixed image"
+    statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); Go binaries in grafana/otel-lgtm (0.41.0, the pinned tag); ends when upstream ships a fixed image"
     expired_at: 2026-12-15
   - id: CVE-2026-97054
     statement: "Go stdlib (net/http MaxBytesReader) in the binaries of grafana/alloy (v1.22.0), grafana/otel-lgtm (0.41.0), oliver006/redis_exporter (v1.97.0), quay.io/adorsys/keycloak-config-cli (6.5.1-26.5.5, its pebble) and postgres (gosu; pinned 18.6, and 18.7 still carries it): each is the newest tag and was built with Go older than 1.26.11 / 1.27.4, the fixed versions, so no patched tag exists for any of them; ends when upstream ships a fixed image"
