@@ -56,7 +56,7 @@ somewhere else. An issue that comes back after its task is done is a
 regression and gets a new ID, and its description names the ID it
 repeats, so the recurrence stays visible once the old entry is gone.
 
-**Highest issued:** MUST-28 · SHOULD-144 · COULD-170
+**Highest issued:** MUST-28 · SHOULD-144 · COULD-171
 
 ## MUST
 
@@ -432,6 +432,17 @@ repeats, so the recurrence stays visible once the old entry is gone.
   [iteration 12 task 03](iteration-12/03-design-a-cellar-entry-and-its-bottles.md);
   the fix is to recompute on the app returning to the foreground, with a test beside
   `CellarEntryView.test.tsx`.
+- **COULD-171** *(confirmed 2026-11-27)* — `make mobile-android-release` installs
+  and opens the app and then does not return: it printed `Waiting on
+  http://localhost:<port>` and was stopped about six minutes after the install.
+  `scripts/mobile-native.mjs` starts Metro only for the development variant, and
+  its own comment says `expo run` stays attached to a Metro it starts itself, so
+  that is the likely cause (not verified). It contradicts
+  [`mobile/README.md`](../../mobile/README.md#run-the-app), which says the targets
+  return. Found while signing off
+  [iteration 12 task 05](iteration-12/05-a-user-opens-a-beer-in-their-cellar-and-sees-its-bottles.md);
+  whether `mobile-ios-release` does the same was not checked. The fix is for a
+  release run to exit after the install, with a test in `mobile-native.test.mjs`.
 
 ## Retired
 

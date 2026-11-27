@@ -1,6 +1,6 @@
 # Task 05: A user opens a beer in their cellar and sees its bottles
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** DW-1
 
@@ -66,7 +66,7 @@ withdrawn beer, which has none.
       showing its bottles when the list's refresh fails
 - [x] A Maestro flow opens a seeded beer from the cellar and returns on
       Android, and was confirmed to fail without the screen
-- [ ] The product owner used the screen on both platforms and signed it off
+- [x] The product owner used the screen on both platforms and signed it off
 - [x] `make verify-fast` is green
 
 ## Notes
