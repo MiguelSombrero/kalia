@@ -1,6 +1,6 @@
 # Task 04: A user sees their cellar on their phone
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** DW-1
 
@@ -77,7 +77,7 @@ invitation stays as it is.
       narrowed by the find field
 - [x] A Maestro flow signs in and reads a seeded cellar on Android, and was
       confirmed to fail against the placeholder
-- [ ] The product owner used the screen on both platforms and signed it off
+- [x] The product owner used the screen on both platforms and signed it off
 - [x] `make verify-fast` is green
 
 ## Notes
