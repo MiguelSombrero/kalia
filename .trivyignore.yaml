@@ -167,7 +167,7 @@ vulnerabilities:
     expired_at: 2026-12-15
   - id: CVE-2026-78661
     statement: "golang.org/x/net in Go binaries of grafana/otel-lgtm (0.41.0 is the pinned tag and 0.41.1, published 2026-11-20 and the newest, still carries it); ends when upstream ships a fixed image"
-    expired_at: 2026-12-01
+    expired_at: 2026-12-15
   - id: CVE-2026-78667
     statement: "the gosu binary in postgres (postgres:19.0 is the pinned tag and still carries it: gosu was built with an old Go toolchain); Go binaries in grafana/otel-lgtm (0.41.0, the pinned tag); ends when upstream ships a fixed image"
     expired_at: 2026-12-15
