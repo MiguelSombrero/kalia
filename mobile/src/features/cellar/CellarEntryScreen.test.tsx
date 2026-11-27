@@ -2,7 +2,7 @@ import { registerTransport, type Transport } from "@kalia/api";
 import { act, fireEvent, screen } from "@testing-library/react-native";
 import { Stack } from "expo-router";
 import { renderRouter } from "expo-router/testing-library";
-import { Text } from "react-native";
+import { AppState, type AppStateStatus, Text } from "react-native";
 
 import { AppProviders } from "@/lib/providers/AppProviders";
 import { entryOf } from "@/testing/cellarEntries";
@@ -22,6 +22,14 @@ beforeEach(() => {
   transport.mockResolvedValue({ data: cellar, status: 200, headers: new Headers() });
   registerTransport(transport as unknown as Transport);
 });
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
+
+const problem = { data: { title: "Server error" }, status: 500, headers: new Headers() };
+const pastStaleTime = () => act(async () => void jest.advanceTimersByTime(60_001));
+const openRow = async (name: RegExp) => fireEvent.press(await screen.findByRole("button", { name }));
 
 const Layout = () => (
   <AppProviders locale="en" tokenStore={store}>
@@ -60,6 +68,56 @@ describe("the cellar entry's screen", () => {
 
     expect(await screen.findByRole("heading", { name: "Cellar" })).toBeOnTheScreen();
     expect(screen).toHavePathname("/cellar");
+  });
+
+  it("opens an entry from a list older than the stale time without asking for anything", async () => {
+    await renderApp("/cellar");
+    await screen.findByRole("button", { name: /^Aamunkoi Hefeweizen,/ });
+    await pastStaleTime();
+
+    await openRow(/^Aamunkoi Hefeweizen,/);
+
+    expect(await screen.findByRole("heading", { name: "Aamunkoi Hefeweizen" })).toBeOnTheScreen();
+    await pastStaleTime();
+    expect(transport).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows the bottles the list holds after its refresh has failed, without asking again", async () => {
+    await renderApp("/cellar");
+    await screen.findByRole("button", { name: /^Long Cellared Stout,/ });
+    transport.mockResolvedValue(problem);
+    await act(async () => screen.getByLabelText("Cellar").props.refreshControl.props.onRefresh());
+    await screen.findByText("Couldn't refresh your cellar. What you see may be out of date.");
+
+    await openRow(/^Long Cellared Stout,/);
+
+    expect(await screen.findByRole("heading", { name: "Long Cellared Stout" })).toBeOnTheScreen();
+    expect(screen.getAllByRole("listitem")).toHaveLength(24);
+    expect(transport).toHaveBeenCalledTimes(2);
+  });
+
+  it("keeps its bottles when the list's refresh fails while it is open", async () => {
+    let onChange: (state: AppStateStatus) => void = () => undefined;
+    jest.spyOn(AppState, "addEventListener").mockImplementation((_, listener) => {
+      onChange = listener;
+      return { remove: jest.fn() };
+    });
+    await renderApp("/cellar");
+    await openRow(/^Long Cellared Stout,/);
+    await screen.findByRole("heading", { name: "Long Cellared Stout" });
+    transport.mockResolvedValue(problem);
+
+    await act(() => onChange("background"));
+    await pastStaleTime();
+    await act(() => onChange("active"));
+    await act(async () => void jest.advanceTimersByTime(0));
+
+    expect(transport).toHaveBeenCalledTimes(2);
+    expect(screen.getByRole("heading", { name: "Long Cellared Stout" })).toBeOnTheScreen();
+    expect(screen.getAllByRole("listitem")).toHaveLength(24);
+
+    await fireEvent.press(screen.getByRole("button", { name: "Back to the cellar" }));
+    expect(await screen.findByText("Couldn't refresh your cellar. What you see may be out of date.")).toBeOnTheScreen();
   });
 
   it("lists every bottle of the beer it was opened for", async () => {
