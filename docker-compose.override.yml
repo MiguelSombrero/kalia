@@ -258,7 +258,7 @@ services:
     # Valkey's own INFO as counters: connected clients, memory, commands. The image
     # has no shell, so no healthcheck.
     profiles: [observability]
-    image: oliver006/redis_exporter:v1.97.0
+    image: oliver006/redis_exporter:v1.99.0
     depends_on:
       valkey:
         condition: service_healthy
