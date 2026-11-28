@@ -3,7 +3,6 @@
 - **Status:** accepted
 - **Date:** 2026-11-28
 - **Task:** [iteration 12 task 06](../tasks/iteration-12/06-design-the-bottle-form.md)
-- **ADR:** [ADR-0116](../adr/0116-the-phone-draws-the-platforms-own-date-pickers-through-the-community-datetimepicker-at-the-version-the-expo-sdk-lists.md)
 
 ## Question
 
@@ -54,6 +53,15 @@ final.
 
 It covers the form's fields, their order, how a date is entered and cleared, the
 messages and the two actions, as one component for add and edit.
+
+The calendars are the platforms' own, as the product owner asked, drawn through
+`@react-native-community/datetimepicker` at the version the Expo SDK lists.
+`@expo/ui` was passed over as a whole UI library, with a worklets peer
+dependency, taken for one control; a date typed into fields of our own would not
+have been the platforms' picker. Only the two `DateField` files draw with the
+package, so replacing it leaves the form as it is. Its maintainers ask for help in
+its README, so an SDK upgrade may find it lagging. Android's dialog follows the
+system's language, not the app's.
 
 It leaves alone how the beer is found. The product owner asked, while comparing,
 for the Add action to let the user pick the beer from the catalog or enter a new

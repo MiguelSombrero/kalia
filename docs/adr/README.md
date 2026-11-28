@@ -254,9 +254,6 @@ and the third keeps that identifier from ever passing to someone else.
   — the Android end-to-end job caches no native build output: ccache saved
   1:45 of the build step, short of the three-minute bar, and a cached CMake
   output made it slower.
-- [ADR-0116](0116-the-phone-draws-the-platforms-own-date-pickers-through-the-community-datetimepicker-at-the-version-the-expo-sdk-lists.md)
-  — the phone draws the platforms' own date pickers through
-  `@react-native-community/datetimepicker`, at the version the Expo SDK lists.
 
 ## Authentication and identity
 
@@ -594,7 +591,6 @@ hook runs it, and syncs the index cells, after an edit under `docs/adr/`
 | [ADR-0105](0105-the-admin-reviews-suggestions-in-a-queue-beside-the-suggestion-and-rejects-through-a-dialog-that-asks-for-the-reason.md) | The admin reviews suggestions in a queue beside the suggestion, edits in place, and rejects through a dialog that asks for the reason | accepted | 2026-11-06 |
 | [ADR-0106](0106-a-contributors-unread-notifications-are-one-signal-in-the-sticky-bar-that-opens-a-panel-over-the-page.md) | A contributor's unread notifications are one signal in the sticky bar that opens a panel over the page | accepted | 2026-11-06 |
 | [ADR-0107](0107-one-typescript-token-source-generates-the-webs-css-the-apps-theme-and-keycloaks-stylesheet-by-a-generator-of-our-own.md) | One TypeScript token source generates the web's CSS, the app's theme and Keycloak's stylesheet, through a generator of our own rather than Style Dictionary | accepted | 2026-11-07 |
-| [ADR-0116](0116-the-phone-draws-the-platforms-own-date-pickers-through-the-community-datetimepicker-at-the-version-the-expo-sdk-lists.md) | The phone draws the platforms' own date pickers through the community datetimepicker, at the version the Expo SDK lists | accepted | 2026-11-27 |
 
 ### Engineering process and documentation
 
