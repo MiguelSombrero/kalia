@@ -1,6 +1,20 @@
 appId: fi.kalia.app
 name: Sign in as the seeded account through Keycloak, from a launched app
 ---
+# Do not tap a tab straight after launch: Android has opened the keyboard on the
+# Catalog's search field by itself, and the tap on Profile landed on a key of
+# it. Dragging the list closes a keyboard and does nothing else without one.
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "beer-row"
+          timeout: 60000
+      - swipe:
+          start: "50%, 45%"
+          end: "50%, 25%"
 - tapOn: "Profile|Profiili"
 - tapOn:
     id: "profile-sign-in"

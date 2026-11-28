@@ -464,6 +464,27 @@ repeats, so the recurrence stays visible once the old entry is gone.
   [iteration 12 task 03](iteration-12/03-design-a-cellar-entry-and-its-bottles.md);
   the fix is to recompute on the app returning to the foreground, with a test beside
   `CellarEntryView.test.tsx`.
+- **COULD-171** *(confirmed 2026-11-27)* — `make mobile-android-release` installs
+  and opens the app and then does not return: it printed `Waiting on
+  http://localhost:<port>` and was stopped about six minutes after the install.
+  `scripts/mobile-native.mjs` starts Metro only for the development variant, and
+  its own comment says `expo run` stays attached to a Metro it starts itself, so
+  that is the likely cause (not verified). It contradicts
+  [`mobile/README.md`](../../mobile/README.md#run-the-app), which says the targets
+  return. Found while signing off
+  [iteration 12 task 05](iteration-12/05-a-user-opens-a-beer-in-their-cellar-and-sees-its-bottles.md);
+  whether `mobile-ios-release` does the same was not checked. The fix is for a
+  release run to exit after the install, with a test in `mobile-native.test.mjs`.
+- **COULD-172** *(confirmed 2026-11-27)* — On Android the app has opened the
+  keyboard on the Catalog's search field by itself at launch
+  (`SHOW_AUTO_EDITOR_FORWARD_NAV` in the device log), on an emulator in CI
+  (run 45998147092) and on one locally. What makes the field take focus is not
+  known, nor whether a person's phone does it. The sign-in subflow closes the
+  keyboard before its first tap; `navigation.yaml`, `catalog-lists-beers.yaml`,
+  `beer-details.yaml` and `catalog-search-and-filter.yaml` also tap a tab straight
+  after launch. The fix is to find why the field is focused and stop it in the
+  app, then drop the subflow's swipe. Found in
+  [iteration 12 task 05](iteration-12/05-a-user-opens-a-beer-in-their-cellar-and-sees-its-bottles.md).
 - **COULD-173** *(confirmed 2026-11-28)* — the two rules for a bottle's dates
   (no brewed day after today; best-before strictly after brewed) are written
   twice, in `web/features/cellar/bottleDateRules.ts` and
