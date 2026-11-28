@@ -16,7 +16,7 @@
     "android:prebuild": "expo prebuild --platform android --no-install",
     "typegen": "expo customize tsconfig.json",
     "lint": "npm run typegen && eslint --max-warnings 0 && tsc --noEmit",
-    "test": "jest && node --test scripts/render-assets.test.mjs app.config.test.mjs scripts/check-cleartext.test.mjs plugins/withCleartextExceptions.test.mjs"
+    "test": "jest && node --test scripts/render-assets.test.mjs app.config.test.mjs scripts/check-cleartext.test.mjs plugins/withCleartextExceptions.test.mjs plugins/withAndroidAccentColour.test.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/bricolage-grotesque": "0.4.1",
@@ -24,6 +24,7 @@
     "@kalia/api": "*",
     "@kalia/locales": "*",
     "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-community/datetimepicker": "9.2.1",
     "@tanstack/react-query": "^5.107.1",
     "expo": "~58.0.21",
     "expo-application": "~58.1.2",

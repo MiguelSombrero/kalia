@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { Platform, Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
+import { choicePlace, choiceSemantics } from "@/lib/a11y/choiceSemantics";
 import { textStyle } from "@/lib/design/fonts";
 import { theme } from "@/lib/design/theme.generated";
 import { createThemedStyles } from "@/lib/design/themedStyles";
@@ -10,18 +11,12 @@ import { EDGE } from "./metrics";
 
 const CHECK_SIZE = 26;
 
-// iOS has no radio trait: React Native fakes one by appending "radio button" and "checked" or "unchecked" to the
-// row's value, in its own translation table, which VoiceOver can speak in a voice of another language. Button plus
-// selected are traits iOS itself speaks in the voice's language. Android's radio role is announced by TalkBack.
-const choiceSemantics = (selected: boolean) =>
-  Platform.OS === "ios" ? ({ role: "button", accessibilityState: { selected } } as const) : ({ role: "radio", accessibilityState: { checked: selected } } as const);
-
 type ChoiceRowProps = { label: string; sub?: string; selected: boolean; onPress: () => void; leading?: ReactNode; bordered?: boolean; position: { index: number; count: number } };
 
 export const ChoiceRow = ({ label, sub, selected, onPress, leading, bordered, position }: ChoiceRowProps) => {
   const styles = useStyles();
   const { t } = useTranslation();
-  const place = Platform.OS === "ios" ? { accessibilityValue: { text: t("a11y.positionInSet", { position: position.index, total: position.count }) } } : null;
+  const place = choicePlace(t("a11y.positionInSet", { position: position.index, total: position.count }));
   return (
     <Pressable {...choiceSemantics(selected)} {...place} accessibilityLabel={sub ? `${label}, ${sub}` : label} onPress={onPress} style={[styles.row, bordered ? styles.bordered : styles.ruled, selected && styles.rowSelected]}>
       {leading}

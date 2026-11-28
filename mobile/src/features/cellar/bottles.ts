@@ -15,6 +15,12 @@ export const isPastBestBefore = (bottle: Dated, today: string): boolean => Boole
 export const localToday = (now: Date = new Date()): string =>
   `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
+// Do not replace with `new Date(isoDate)`: that is UTC midnight, while a date picker reads the local day, so west of Greenwich it shows the day before.
+export const dayAsDate = (isoDate: string): Date => {
+  const [year, month, day] = isoDate.split("-").map(Number);
+  return new Date(year as number, (month as number) - 1, day as number, 12);
+};
+
 // A date is a day with no time zone: a date-only value parses as UTC midnight, so it is formatted in UTC, or anywhere west of it would read the day before.
 export const formatBottleDate = (isoDate: string, language: string): string => {
   const date = new Date(isoDate);

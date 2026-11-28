@@ -83,10 +83,12 @@ run.
    (`scripts/check-design-tokens.mjs` fails without one). The choice does
    **not** go in the task file: it is the request and is frozen at completion
    ([ADR-0026](../../../docs/adr/0026-task-file-format.md)).
-   - If the choice also makes an architectural decision — what a read
-     returns, a check the build runs, a new dependency — that part is an ADR
+   - If the choice also makes an architectural decision by all four of
+     ADR-0032's tests — what a read returns, a check the build runs, a
+     dependency costlier to replace than this task — that part is an ADR
      (`make next-adr`, [the ADR template](../../../docs/adr/template.md)) or
-     an amendment of the ADR it touches, and the record links it.
+     an amendment of the ADR it touches, and the record links it. A dependency
+     one task could replace goes in the record, with what was passed over.
    - If the choice changes one recorded as an ADR before 2026-11-13, the
      record names that ADR in `Departs from`, and the ADR gets an `Amended`
      line pointing back.

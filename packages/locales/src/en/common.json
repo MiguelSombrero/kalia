@@ -808,5 +808,15 @@
     "brewedMissing": "Brewed: not recorded",
     "notFound": "This beer is no longer in your cellar.",
     "bestBeforeMissing": "Best before: not recorded"
+  },
+  "bottleForm": {
+    "addTitle": "Add bottles",
+    "notSet": "Not set",
+    "done": "Done",
+    "doneFor": "Done: {{field}}",
+    "cancelFor": "Cancel: {{field}}",
+    "clearDate": "Clear date",
+    "clearDateFor": "Clear date: {{field}}",
+    "clear": "Clear"
   }
 }

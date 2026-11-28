@@ -808,5 +808,15 @@
     "brewedMissing": "Panopäivä: ei kirjattu",
     "notFound": "Tämä olut ei ole enää kellarissasi.",
     "bestBeforeMissing": "Parasta ennen: ei kirjattu"
+  },
+  "bottleForm": {
+    "addTitle": "Lisää pulloja",
+    "notSet": "Ei asetettu",
+    "done": "Valmis",
+    "doneFor": "Valmis: {{field}}",
+    "cancelFor": "Peruuta: {{field}}",
+    "clearDate": "Tyhjennä päivä",
+    "clearDateFor": "Tyhjennä päivä: {{field}}",
+    "clear": "Tyhjennä"
   }
 }

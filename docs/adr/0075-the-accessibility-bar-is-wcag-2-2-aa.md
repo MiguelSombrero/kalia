@@ -4,6 +4,8 @@
 - **Date:** 2026-10-11
 - **Amended:** 2026-11-14 — the bar holds for the mobile app too; see the
   mobile paragraph of Decision, which maps WCAG 2.2 AA onto its rules
+- **Amended:** 2026-11-28 — the phone's hand walk is done only in the settings the
+  product owner's phone is in.
 
 ## Context
 
@@ -85,6 +87,15 @@ recorded in the pull request in words, in a Finnish and an English voice.
 | 4.1.3 Status Messages | A failure and an empty result are announced (`useAnnounce`) | `EmptyState.flow.test.tsx`; the walk |
 | Beyond AA: 2.3.3 Animation from Interactions (AAA) | Motion stops under reduced motion, a courtesy the app already keeps | `motion/index.reduced.test.tsx` |
 | 2.1.1 Keyboard, 2.5.7 Dragging Movements | Every control is a single press; no drag exists. Switch and keyboard access go through the same roles | the walk |
+
+> **Amended 2026-11-28.** The product owner narrowed the hand walk, Kalia being a
+> hobby project: it is walked only in the settings their phone is in, Finnish and
+> dark mode at the time, and nobody switches language, appearance, text size or
+> reduced motion for it. Where the table says "the walk at the largest size" or
+> "in both voices", the largest size is held by the named tests and the agent's
+> own look on a Simulator or emulator, and the words by the walk in the owner's
+> voice. No hand now checks an English voice, VoiceOver in light mode, or speech
+> and focus at the largest size or under reduced motion. The bar stays WCAG 2.2 AA.
 
 A role whose spoken words React Native supplies (`radio`, `checkbox`) is unsafe
 on iOS: the first walk of the catalog's filter pickers heard a Finnish voice

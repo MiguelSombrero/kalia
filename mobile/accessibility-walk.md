@@ -15,7 +15,12 @@ finding is fixed in the pull request or filed in the
 ## What to walk, and when
 
 Walk a screen when it is new or its controls, order, labels or sheets change.
-Every walk has the same four passes:
+
+**Walk it in the settings the product owner's phone is in** (Finnish and dark
+mode on 2026-11-28) and ask for no other: no switching language, appearance, text
+size or reduced motion
+([ADR-0075](../docs/adr/0075-the-accessibility-bar-is-wcag-2-2-aa.md), amended).
+Record which settings it was. Every walk has the same three passes:
 
 1. **Spoken order and names.** Swipe through the screen once. Each control says
    its name, then its role or state, then its place in a set where it has one.
@@ -27,9 +32,11 @@ Every walk has the same four passes:
 3. **State and messages.** Change something (pick an option, run a search that
    finds nothing, fail a request): the new state is spoken, an error or an empty
    result without the user moving to it.
-4. **The largest text size.** Everything is still reachable and readable, a long
-   Finnish name is whole, nothing is cut by a fixed height, the tab bar's words
-   stay beside their pictures.
+
+**The largest text size is not a pass of the walk.** The tests hold it
+([CONVENTIONS.md](CONVENTIONS.md)), and the agent who changes a screen looks at it
+at the largest size on a Simulator or emulator, with a long Finnish name:
+everything reachable and readable, nothing cut by a fixed height.
 
 ## iPhone and VoiceOver
 
@@ -39,20 +46,14 @@ release build ([A release build on the iPhone](README.md#a-release-build-on-the-
 
 1. **Set up once.** Settings > Accessibility > VoiceOver > on. Settings >
    Accessibility > Accessibility Shortcut > VoiceOver, so a triple-click of the
-   side button turns it on and off. Settings > Accessibility > Display & Text
-   Size > Larger Text > Larger Accessibility Sizes on, the slider at its end for
-   pass 4 (back to a middle size after).
+   side button turns it on and off.
 2. **Gestures.** Swipe right or left: next or previous item. Double-tap: press.
    Three fingers swipe: scroll. Two fingers tap: pause speech. Rotor (twist two
    fingers): Headings to jump between titles. Touch an item to hear it without
    moving on.
-3. **Both voices.** The app follows the phone's language, and VoiceOver's voice
-   follows it too: walk once with Settings > General > Language & Region set to
-   **English**, once to **Finnish** (the phone restarts when the language changes, its
-   data stays). The Finnish walk is where React Native's own English words show: any
-   English word spoken in it is a finding.
-4. **Reduced motion.** Settings > Accessibility > Motion > Reduce Motion on for a
-   pass: no scale on a press, tabs and sheets fade.
+3. **The voice.** The app follows the phone's language, and VoiceOver's voice
+   follows it too. In a Finnish voice, React Native's own English words show: any
+   English word spoken is a finding.
 
 ## Android and TalkBack
 
@@ -75,12 +76,9 @@ nothing else.
    Keyboard shortcuts, which also lists every shortcut): modifier+Right and
    Left move between items, modifier+Enter presses. A tap in TalkBack only
    selects: a double tap presses.
-5. **Largest text.** Settings > Display > Font size and Display size > the
-   largest, for pass 4.
-
 ## The catalog's walk
 
-Run the four passes over each. Expected speech is the English wording; in
+Run the three passes over each. Expected speech is the English wording; in
 Finnish the same, from `@kalia/locales`.
 
 - **Tab bar.** Left to right: Feed, Catalog, **Add a beer**, Cellar, Profile, each

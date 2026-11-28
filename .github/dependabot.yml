@@ -36,6 +36,7 @@ updates:
       - dependency-name: "react-native-safe-area-context"
       - dependency-name: "react-native-screens"
       - dependency-name: "@react-native-async-storage/async-storage"
+      - dependency-name: "@react-native-community/datetimepicker"
       # The OpenTelemetry family moves only together, and the web's span
       # redaction (web/lib/telemetry/) is built on @vercel/otel 2.3.0, whose
       # peer ranges stop below `@opentelemetry/api` 1.10 and the 0.3xx / 3.x

@@ -1,6 +1,6 @@
 # Task 06: Design the bottle form
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** DW-1
 - **Kind:** design
@@ -77,21 +77,21 @@ conventions where they differ. Standing intent goes in
 
 ## Acceptance criteria
 
-- [ ] The product owner chose from built alternatives, at minimum the quantity
+- [x] The product owner chose from built alternatives, at minimum the quantity
       control and how the two dates are entered and cleared, each felt on both
       platforms; a design record holds the directions and the choice
-- [ ] A component test finds every control and the submit and cancel actions by
+- [x] A component test finds every control and the submit and cancel actions by
       role and accessible name
-- [ ] A component test shows submit reporting the chosen values once, a
+- [x] A component test shows submit reporting the chosen values once, a
       best-before date not after the brewed one refused with its message, and
       a quantity outside one to twenty-four refused
-- [ ] A component test shows the form with a long Finnish beer name at the
+- [x] A component test shows the form with a long Finnish beer name at the
       largest font scale reading in full
-- [ ] `docs/design.md` carries the chosen form as standing intent, and
+- [x] `docs/design.md` carries the chosen form as standing intent, and
       `scripts/check-design-tokens.mjs` and `scripts/check-contrast.mjs` pass
       over it
-- [ ] The product owner signed off the built form live, on both platforms
-- [ ] `make verify-fast` is green
+- [x] The product owner signed off the built form live, on both platforms
+- [x] `make verify-fast` is green
 
 ## Notes
 

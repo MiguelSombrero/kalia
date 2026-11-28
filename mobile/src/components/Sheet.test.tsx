@@ -1,13 +1,13 @@
 import { act, fireEvent, screen } from "@testing-library/react-native";
-import { useState } from "react";
-import { AccessibilityInfo, Text } from "react-native";
+import { useRef, useState } from "react";
+import { AccessibilityInfo, type HostInstance, ScrollView, Text, View } from "react-native";
 
 import { theme } from "@/lib/design/theme.generated";
 import { MODES, systemIs, withLargestFont } from "@/testing/colorMode";
 import { layOut } from "@/testing/layOut";
 import { renderWithLocale } from "@/testing/renderWithLocale";
 
-import { Sheet, SHEET_PRESENTED_MS } from "./Sheet";
+import { Sheet, SHEET_PRESENTED_MS, useRevealInSheet } from "./Sheet";
 
 afterEach(() => jest.restoreAllMocks());
 
@@ -152,5 +152,52 @@ describe("Sheet", () => {
       expect(focus()).toHaveBeenCalledTimes(2);
       expect(sentTo(1)[0].props).toMatchObject({ role: "heading", children: "Tyyli" });
     });
+  });
+});
+
+const VIEWPORT = 600;
+
+const Revealed = () => {
+  const node = useRef<HostInstance>(null);
+  const reveal = useRevealInSheet();
+  return (
+    <View ref={node}>
+      <Text onPress={() => reveal(node.current)}>reveal</Text>
+    </View>
+  );
+};
+
+describe("Sheet bringing part of itself into view", () => {
+  const revealAt = async (y: number, height: number, scrolled = 0) => {
+    jest.spyOn(View.prototype as unknown as HostInstance, "measureLayout").mockImplementation((_relativeTo, onSuccess) => onSuccess(0, y, 320, height));
+    const scrollTo = jest.spyOn(ScrollView.prototype as unknown as { scrollTo: () => void }, "scrollTo").mockClear();
+    await renderWithLocale(
+      <Sheet title="Lisää pulloja" closeLabel="Peruuta" onClose={() => undefined}>
+        <Revealed />
+      </Sheet>,
+      "fi",
+    );
+    await fireEvent(screen.getByTestId("sheet-scroll"), "layout", { nativeEvent: { layout: { x: 0, y: 0, width: 320, height: VIEWPORT } } });
+    await fireEvent.scroll(screen.getByTestId("sheet-scroll"), { nativeEvent: { contentOffset: { x: 0, y: scrolled } } });
+    await fireEvent.press(screen.getByText("reveal"));
+    return scrollTo;
+  };
+
+  const PADDING = theme.spacing.medium;
+
+  it.each([
+    ["scrolls just far enough to show the end of a part below the view", 700, 400, 0, PADDING + 700 + 400 - VIEWPORT],
+    ["shows the end of a part taller than the view", 100, 900, 0, PADDING + 100 + 900 - VIEWPORT],
+    ["goes back to the start of a part above the view", 100, 100, 500, PADDING + 100],
+  ])("%s", async (_name, y, height, scrolled, expected) => {
+    const scrollTo = await revealAt(y, height, scrolled);
+
+    expect(scrollTo).toHaveBeenCalledWith({ y: expected, animated: true });
+  });
+
+  it("stays put when the part is already whole in view", async () => {
+    const scrollTo = await revealAt(50, 100);
+
+    expect(scrollTo).not.toHaveBeenCalled();
   });
 });
