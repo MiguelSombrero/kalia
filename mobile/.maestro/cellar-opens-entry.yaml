@@ -1,0 +1,54 @@
+appId: fi.kalia.app
+name: A seeded beer opens from the cellar with its bottles and returns to the list
+---
+# Reads the cellar scripts/seed-cellar.mjs puts in place before the flows run:
+# three bottles of Lapin Kulta, each best before 30 June 2031.
+- launchApp:
+    clearState: true
+- runFlow: subflows/sign-in-as-testuser.yaml
+- tapOn: "Cellar|Kellari"
+- extendedWaitUntil:
+    visible: "Lapin Kulta, .*"
+    timeout: 60000
+- tapOn: "Lapin Kulta, .*"
+- extendedWaitUntil:
+    visible:
+      id: "cellar-entry-head"
+    timeout: 30000
+- assertVisible:
+    id: "bottle-row"
+    index: 2
+- assertVisible: ".*(Best before Jun 30, 2031|Parasta ennen 30\\.6\\.2031).*"
+- tapOn: "Back to the cellar|Takaisin kellariin"
+- extendedWaitUntil:
+    visible: "3 beers · 6 bottles|3 olutta · 6 pulloa"
+    timeout: 30000
+- assertNotVisible:
+    id: "cellar-entry-head"
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - tapOn: "Lapin Kulta, .*"
+      - extendedWaitUntil:
+          visible:
+            id: "cellar-entry-head"
+          timeout: 30000
+      - tapOn: "See in the catalog|Näytä katalogissa"
+      - extendedWaitUntil:
+          visible:
+            id: "beer-headline"
+          timeout: 30000
+      - back
+      - extendedWaitUntil:
+          visible:
+            id: "cellar-entry-head"
+          timeout: 30000
+      - assertNotVisible:
+          id: "beer-headline"
+      - back
+      - extendedWaitUntil:
+          visible: "3 beers · 6 bottles|3 olutta · 6 pulloa"
+          timeout: 30000
+      - assertNotVisible:
+          id: "cellar-entry-head"

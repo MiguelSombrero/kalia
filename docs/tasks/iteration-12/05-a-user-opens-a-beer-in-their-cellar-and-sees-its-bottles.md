@@ -1,6 +1,6 @@
 # Task 05: A user opens a beer in their cellar and sees its bottles
 
-- **Status:** refined
+- **Status:** done
 - **Iteration:** [12](../iteration-12.md)
 - **Covers:** DW-1
 
@@ -56,18 +56,18 @@ withdrawn beer, which has none.
 
 ## Acceptance criteria
 
-- [ ] A component test shows an entry's bottles with their dates and an expired
+- [x] A component test shows an entry's bottles with their dates and an expired
       bottle marked, found by role and accessible name
-- [ ] A component test shows a bottle with no dates and an entry of twenty-four
+- [x] A component test shows a bottle with no dates and an entry of twenty-four
       bottles at the largest font scale, reading in full
-- [ ] A component test shows a withdrawn entry with its bottles and no catalog
+- [x] A component test shows a withdrawn entry with its bottles and no catalog
       link, and an approved one's link opening the beer's page
-- [ ] A component test shows the sheet issuing no request of its own, and still
+- [x] A component test shows the sheet issuing no request of its own, and still
       showing its bottles when the list's refresh fails
-- [ ] A Maestro flow opens a seeded beer from the cellar and returns on
+- [x] A Maestro flow opens a seeded beer from the cellar and returns on
       Android, and was confirmed to fail without the screen
-- [ ] The product owner used the screen on both platforms and signed it off
-- [ ] `make verify-fast` is green
+- [x] The product owner used the screen on both platforms and signed it off
+- [x] `make verify-fast` is green
 
 ## Notes
 

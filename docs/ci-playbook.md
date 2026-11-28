@@ -307,6 +307,15 @@ false: id: beer-row is visible` or a `Timeout`.** A real failure: the app
 started, the device was healthy, and the catalog screen rendered no row. Read
 the stack's logs the job prints, then `maestro-output/android/`.
 
+**`Element not found: Id matching regex: profile-sign-in`, with the Catalog on
+the failing screenshot.** Search the flow's `device-logcat.txt` for
+`SHOW_AUTO_EDITOR_FORWARD_NAV`: Android opened the keyboard on the Catalog's
+search field at launch, the tap on the Profile tab landed on its Search key
+(`IME_ACTION, data=search`), and the screenshot, taken later, shows no keyboard
+(run 45998147092). The sign-in subflow now closes a keyboard before that tap;
+another flow that taps a tab straight after launch can still meet it (COULD-172
+in [the quality backlog](tasks/quality-backlog.md)).
+
 **`[Failed] Sign in through Keycloak and read the profile from the stack`.**
 Open the failing step's screenshot in `maestro-output/android/`. The app's own
 sign-in sheet still showing means the tap missed its button: the flow taps it
