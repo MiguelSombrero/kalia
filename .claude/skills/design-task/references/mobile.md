@@ -74,7 +74,8 @@ is the decision this file carries out.
 Confirm the built direction in the native app and get the product owner's
 final sign-off on the iPhone in phone mode. Record their VoiceOver walk on the
 iPhone in words — the Simulator has no VoiceOver — and attach no recording or
-screenshot.
+screenshot. The walk is in the settings their phone is in, never more
+([accessibility-walk.md](../../../../mobile/accessibility-walk.md)).
 
 ## Evidence
 
