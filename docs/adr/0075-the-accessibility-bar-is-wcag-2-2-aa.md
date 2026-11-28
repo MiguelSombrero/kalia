@@ -7,7 +7,6 @@
 - **Amended:** 2026-11-28 — the phone's hand walk is done only in the settings the
   product owner's phone is in.
 
-
 ## Context
 
 Kalia has held itself to WCAG 2.1 AA since iteration 2, enforced at three
