@@ -139,7 +139,7 @@ services:
     # downloads about 600 MB of Grafana plugins into /data, which the volume
     # keeps; a stopped profile needs no network.
     profiles: [observability]
-    image: grafana/otel-lgtm:0.41.0
+    image: grafana/otel-lgtm:0.41.1
     ports:
       # Grafana, bound to localhost only like every other published port. The
       # collector's OTLP ports (4317, 4318) are reached in-network as lgtm:4318.
