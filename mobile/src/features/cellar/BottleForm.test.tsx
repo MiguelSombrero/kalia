@@ -33,7 +33,7 @@ const renderEdit = async (bottle: { containerType: "BOTTLE" | "CAN" | "KEG"; bre
 const press = (name: string) => fireEvent.press(screen.getByRole("button", { name }));
 const pickOnCalendar = (year: number, month: number, day: number) => fireEvent(screen.getByTestId("date-picker"), "valueChange", {}, new Date(year, month - 1, day, 12));
 const enterDate = async (field: string, year: number, month: number, day: number) => {
-  await fireEvent.press(screen.getByRole("button", { name: new RegExp(`^${field.replace(/[()]/g, "\\$&")}: `) }));
+  await fireEvent.press(screen.getByRole("button", { name: new RegExp(`^${field.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}: `) }));
   await pickOnCalendar(year, month, day);
   await press(`Done: ${field}`);
 };
