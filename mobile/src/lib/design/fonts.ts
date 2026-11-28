@@ -53,5 +53,5 @@ export const titleScale = { maxFontSizeMultiplier: 2 } as const;
 /** The tab bar has a fixed height, so its labels stay near their default size, as the platform's own do. */
 export const tabLabelScale = { maxFontSizeMultiplier: 1.2 } as const;
 
-/** The system text size from which a card gives its strength a line of its own instead of a column beside the text. */
+/** The system text size from which things set side by side stack instead: a card's strength, the bottle form's containers. */
 export const STACK_FROM_FONT_SCALE = 1.5;

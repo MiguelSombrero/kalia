@@ -8,12 +8,12 @@ import { PressFeedback } from "@/lib/motion/PressFeedback";
 
 import { EDGE } from "./metrics";
 
-type FieldRowProps = { title: string; value: string; empty: boolean; onPress: () => void; leading?: ReactNode; accessibilityLabel: string };
+type FieldRowProps = { title: string; value: string; empty: boolean; onPress: () => void; leading?: ReactNode; accessibilityLabel: string; invalid?: boolean };
 
-export const FieldRow = ({ title, value, empty, onPress, leading, accessibilityLabel }: FieldRowProps) => {
+export const FieldRow = ({ title, value, empty, onPress, leading, accessibilityLabel, invalid }: FieldRowProps) => {
   const styles = useStyles();
   return (
-    <PressFeedback role="button" accessibilityLabel={accessibilityLabel} onPress={onPress} style={styles.row}>
+    <PressFeedback role="button" accessibilityLabel={accessibilityLabel} onPress={onPress} style={[styles.row, invalid && styles.rowInvalid]}>
       <View style={styles.text}>
         <Text style={styles.title}>{title}</Text>
         <Text style={[styles.value, empty && styles.valueEmpty]}>{value}</Text>
@@ -28,6 +28,7 @@ export const FieldRow = ({ title, value, empty, onPress, leading, accessibilityL
 
 const useStyles = createThemedStyles((colors) => ({
   row: { flexDirection: "row", alignItems: "center", gap: theme.spacing.tight, minHeight: theme.spacing.touch + theme.spacing.small, paddingVertical: theme.spacing.small, paddingHorizontal: theme.spacing.tight, marginBottom: theme.spacing.small, borderWidth: EDGE, borderColor: colors.border, borderRadius: theme.radius.card, backgroundColor: colors.surface },
+  rowInvalid: { borderColor: colors.destructive },
   text: { flex: 1 },
   title: { ...textStyle("label", "bold"), textTransform: "uppercase", color: colors["muted-foreground"] },
   value: { ...textStyle("body", "bold"), color: colors.foreground },

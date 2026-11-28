@@ -47,7 +47,14 @@
           "backgroundColor": "#005b57"
         }
       ],
-      "./plugins/withCleartextExceptions"
+      "./plugins/withCleartextExceptions",
+      [
+        "./plugins/withAndroidAccentColour",
+        {
+          "light": "#2b37c9",
+          "dark": "#8f99ff"
+        }
+      ]
     ]
   }
 }

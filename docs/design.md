@@ -283,6 +283,46 @@ where the actions on one begin.
 - **Not decided here.** How a bottle is edited, removed or added, and the entry's
   loading, error and offline states.
 
+## Mobile bottle form
+
+The one form that adds bottles and edits one
+([design record](design-records/iteration-12-06-bottle-form.md)). The add puts it
+under the beer it adds to; an edit opens it with the beer fixed.
+
+- **A sheet with its way out named.** Cancel at the top, the title ("Add bottles"
+  or "Edit bottle"), and the submit block ("Add" or "Save") in a bar at the foot.
+- **In this order:** the beer's name and brewery; the container; for an add only,
+  the quantity; the brewed date; the best-before date.
+- **The container is three tiles,** bottle, can and keg, each the phone's container
+  picture and the word, one of them chosen, bottle to begin with. The chosen tile
+  is on the accent colour with a heavier edge.
+- **The quantity is a stepper,** − and + around a large number, from the API's
+  bounds, a button at its bound inert. It is never typed. Each press says the new
+  count to assistive technology.
+- **A date is a row** naming the field, marked optional, and its day in the app's
+  language, or "Not set". It opens the platform's own calendar: on iOS in place
+  under the row, one date at a time, with Done, which records the day shown, and
+  Cancel while the date is empty or Clear date once it is set; on Android the
+  system's calendar dialog, with Clear once set. A set date also has Clear date
+  under its row. An opened iOS calendar scrolls the sheet just far enough to
+  show all of it. The brewed calendar ends today.
+- **A date is a whole day** with no time zone, and no shortcut enters one.
+- **A refusal sits on its field,** as [any error about one field](#feedback-and-errors)
+  does: the date row's edge turns the destructive colour, and a line under it starts
+  with the small red square and its white cross and says what to fix in ordinary
+  ink. It is announced, the row's spoken name carries it, and the submit block is
+  inert while it stands.
+- **Nothing is typed,** so no keyboard opens.
+- **Android's accent is the primary colour,** in both modes, so the system's
+  calendar dialog, its other dialogs' buttons and the text cursor and selection
+  handles take it. It is set for the whole app: a theme given to the date dialog
+  alone draws it white in dark.
+- **At large text sizes** the container tiles stack one under another, picture
+  beside word, so no word breaks to fit a third of the screen. The iOS calendar
+  loses its frame and takes the sheet's whole width, or its last day of the week
+  is cut off. The stepper wraps,
+  nothing is cut or sits in a fixed height, and the form scrolls above the bar.
+
 ## Mobile motion
 
 Motion on the phone explains a change and never decorates one, and the amount
@@ -515,6 +555,7 @@ for a pairing that only the light identity has (a row with no fourth cell is
 | `--color-primary` | `--color-surface-sunken` | text | both |
 | `--color-primary` | `--color-background` | non-text | both |
 | `--color-destructive` | `--color-background` | non-text | both |
+| `--color-destructive` | `--color-surface` | non-text | both |
 | `--color-border` | `--color-background` | non-text | both |
 | `--color-border` | `--color-surface` | non-text | both |
 | `--color-muted-foreground` | `--color-surface` | non-text | both |

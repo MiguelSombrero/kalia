@@ -56,7 +56,7 @@ somewhere else. An issue that comes back after its task is done is a
 regression and gets a new ID, and its description names the ID it
 repeats, so the recurrence stays visible once the old entry is gone.
 
-**Highest issued:** MUST-28 · SHOULD-144 · COULD-170
+**Highest issued:** MUST-28 · SHOULD-147 · COULD-175
 
 ## MUST
 
@@ -270,6 +270,38 @@ repeats, so the recurrence stays visible once the old entry is gone.
   a page swap too (as opening already waits `SHEET_PRESENTED_MS`), or marks
   the pages' rows so the platform has no row to land on; either needs the phone
   to verify.
+- **SHOULD-145** *(confirmed 2026-11-27)* — `make mobile-ios` and
+  `make mobile-android` leave the development build asking port 8081 for its
+  bundle in a worktree whose `METRO_PORT` is another one: Metro comes up on the
+  worktree's port, then `expo run` prints "Waiting on http://localhost:8081" and
+  opens the app there, which fails to load (iOS) or sits on the splash screen
+  (Android). `buildEnv` passes `RCT_METRO_PORT` (`scripts/mobile-env.mjs`), so
+  the cause is probably that `expo run` opens its own default port unless given
+  one. Worked around by opening
+  `exp+kalia://expo-development-client/?url=…localhost%3A<METRO_PORT>` by hand;
+  the fix is to make the target open the app on `METRO_PORT`, with a test in
+  `scripts/mobile-native.test.mjs`. Found building the prototype of
+  [iteration 12 task 06](iteration-12/06-design-the-bottle-form.md).
+
+- **SHOULD-146** *(confirmed 2026-11-28)* — the phone writes error words in red
+  in places `docs/design.md` "Feedback and errors" says they are never red: the
+  catalog filter sheet's strength range
+  (`mobile/src/features/catalog/filters/StrengthFields.tsx`), and
+  `BodyText tone="error"`, which `ErrorAlert` uses, with no red square. The
+  bottle form follows the written style
+  (`mobile/src/features/cellar/FieldError.tsx`); the others should take the same
+  mark, promoted to `components/`, or the section should say where the phone
+  departs. Found building
+  [iteration 12 task 06](iteration-12/06-design-the-bottle-form.md).
+- **SHOULD-147** *(confirmed 2026-11-28)* — `make mobile-ios-device` and
+  `make mobile-ios-device-release` can refuse a wired, unlocked and paired iPhone
+  with "known to the Mac but not connected". `scripts/mobile-ios-device.mjs`
+  takes only an open `devicectl` tunnel as connected, and the tunnel can be idle
+  until something asks the phone a question: `xcrun devicectl device info details
+  --device <udid>` opened it and the target then ran. The check should make that
+  call before judging, with a test in `scripts/mobile-ios-device.test.mjs`. Found
+  installing the build of
+  [iteration 12 task 06](iteration-12/06-design-the-bottle-form.md).
 
 ## COULD
 
@@ -432,6 +464,22 @@ repeats, so the recurrence stays visible once the old entry is gone.
   [iteration 12 task 03](iteration-12/03-design-a-cellar-entry-and-its-bottles.md);
   the fix is to recompute on the app returning to the foreground, with a test beside
   `CellarEntryView.test.tsx`.
+- **COULD-173** *(confirmed 2026-11-28)* — the two rules for a bottle's dates
+  (no brewed day after today; best-before strictly after brewed) are written
+  twice, in `web/features/cellar/bottleDateRules.ts` and
+  `mobile/src/features/cellar/bottleDateRules.ts`, as the bounds were before
+  [iteration 12 task 22](iteration-12/22-the-clients-take-the-backends-bounds-from-one-place.md).
+  Give them one home in the shared packages, with the message keys, and one test.
+- **COULD-174** *(confirmed 2026-11-28)* — at the largest text size a date row's
+  uppercase label breaks inside a word ("(VALINNAINEN)" on the bottle form's
+  Finnish rows): `components/FieldRow.tsx` keeps its chevron beside the label at
+  every size. Everything is still readable. Dropping or moving the chevron from
+  the size at which cards stack would give the label the room.
+- **COULD-175** *(confirmed 2026-11-28)* — a sheet closed by swiping it down
+  loses what was entered in its form without asking. The bottle form
+  (`mobile/src/features/cellar/BottleForm.tsx`) is the first form where that
+  costs something; whichever task mounts it decides whether a changed form asks
+  first or refuses the swipe.
 
 ## Retired
 
